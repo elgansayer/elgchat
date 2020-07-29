@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'bloc/chat_list_callback_events.dart';
 import 'bloc/chat_list_events.dart';
 import 'models.dart';
 
@@ -7,124 +8,177 @@ extension selectedExtension<E extends ChatGroup> on List<E> {
   List<E> selected() {
     return this.where((element) => element.selected).toList();
   }
+
+  List<E> pinned() {
+    return this.where((element) => element.pinned).toList();
+  }
+
+  List<E> archivedIs(bool value) {
+    return this.where((element) => element.archived == value).toList();
+  }
 }
 
 class ChatListScreenLogic<T extends ChatGroup> {
-  List<T> _chatGroups = List<T>();
-  ChatListState _currentState = ChatListState.loading;
-  // String _searchString = "";
+  List<T> chatGroups = List<T>();
+  List<T> archivedGroups = List<T>();
+  ChatListState currentState = ChatListState.loading;
+  // String searchString = "";
 
   ChatListScreenLogic() {
-    _eventController.stream.listen(_handleGotEvent);
+    eventController.stream.listen(handleGotEvent);
 
-    _listenToState();
-    _listenToChatsStream();
+    listenToState();
+    listenToChatsStream();
   }
 
-  _listenToState() {
-    _stateStreamController.stream.listen((ChatListState newState) {
-      if (_currentState == ChatListState.selection &&
+  listenToState() {
+    stateStreamController.stream.listen((ChatListState newState) {
+      if (currentState == ChatListState.selection &&
           newState != ChatListState.selection) {
-        _unselectAll();
+        unselectAll();
       }
 
-      _currentState = newState;
+      currentState = newState;
     });
   }
 
-  _listenToChatsStream() {
-    _chatGroupsStreamController.stream.listen((List<T> chatGroups) {
-      _visibleChatGroupsStreamController.add(chatGroups);
+  listenToChatsStream() {
+    chatGroupsStreamController.stream.listen((List<T> chatGroups) {
+      // bool viewArchived = this.currentState == ChatListState.listarchived;
+      // List<T> nonArchived = chatGroups.archivedIs(viewArchived);
+      visibleChatGroupsStreamController.add(chatGroups);
     });
   }
 
-  ChatListState get currentState => _currentState;
+  // ChatListState get currentState => currentState;
 
-  _handleGotEvent(ChatListEvent event) {
+  handleGotEvent(ChatListEvent event) {
     if (event is SetSearchString) {
-      return _setSearchString(event);
+      return setSearchString(event);
     }
 
     if (event is ClearSearchString) {
-      return _clearSearchString();
+      return clearSearchString();
     }
 
     if (event is ToggleSelectedEvent) {
-      return _toggleSelectedEvent(event);
+      return toggleSelectedEvent(event);
     }
 
     if (event is AddChatGroupsEvent) {
-      return _addChatGroups(event);
+      return addChatGroups(event);
     }
 
     if (event is SetChatGroupsEvent) {
-      return _setChatGroups(event);
+      return setChatGroups(event);
     }
 
     if (event is SetStateEvent) {
-      return _setStateEvent(event);
+      return setStateEvent(event);
     }
 
     if (event is MuteSelectedEvent) {
-      return _muteSelectedEvent();
+      return muteSelectedEvent();
     }
 
     if (event is ArchiveSelectedEvent) {
-      return _archiveSelectedEvent();
+      return archiveSelectedEvent();
     }
 
     if (event is MarkSelectedUnreadEvent) {
-      return _markSelectedUnreadEvent();
+      return markSelectedUnreadEvent();
     }
 
     if (event is PinSelectedEvent) {
-      return _pinSelectedEvent();
+      return pinSelectedEvent();
     }
 
     if (event is DeleteSelectedEvent) {
-      return _deleteSelectedEvent();
+      return deleteSelectedEvent();
     }
 
     if (event is SelectAllEvent) {
-      return _selectAllEvent();
+      return selectAllEvent();
     }
 
-    if (event is SetArchivedChatGroupsEvent) {
-      return _setArchivedChatGroups(event);
+    if (event is UnArchivedEvent) {
+      return unArchivedEvent(event);
+    }
+
+    if (event is DeletedArchivedEvent) {
+      return deletedArchivedEvent(event);
     }
   }
 
-  _clearSearchString() {
-    _visibleChatGroupsStreamController.add(this._chatGroups);
+  deletedArchivedEvent(DeletedArchivedEvent event) {
+    // Remove from archived
+    List<T> newChatGroups = event.chatGroups;
+
+    // Remove from the archived list
+    // any item in newChatGroups
+    archivedGroups.removeWhere((cg) => newChatGroups.contains(cg));
+
+    // Add only archived to ourarchive list
+    archivedChatGroupsStreamController.add(archivedGroups);
   }
 
-  _setSearchString(SetSearchString event) {
+  unArchivedEvent(UnArchivedEvent event) {
+    // Remove from archived
+    List<T> newChatGroups = event.chatGroups.map((ChatGroup cg) {
+      return cg.copyWith(archived: false, selected: false);
+    }).toList();
+
+    //Add back into our chat list
+    chatGroups.addAll(newChatGroups);
+
+    // Remove from the archived list
+    // any item in newChatGroups
+    archivedGroups.removeWhere((cg) => newChatGroups.contains(cg));
+
+    // Add only archived to ourarchive list
+    archivedChatGroupsStreamController.add(archivedGroups);
+
+    // Update our chat list
+    chatGroupsStreamController.add(this.chatGroups);
+  }
+
+  clearSearchString() {
+    // Runs through the visible filters
+    chatGroupsStreamController.add(this.chatGroups);
+  }
+
+  setSearchString(SetSearchString event) {
     List<T> chatGroups = this
-        ._chatGroups
-        .where((cg) => cg.groupName.toLowerCase().contains(event.phrase)).toList();
-    _visibleChatGroupsStreamController.add(chatGroups);
+        .chatGroups
+        .where((cg) => cg.groupName.toLowerCase().contains(event.phrase))
+        .toList();
+
+    chatGroupsStreamController.add(chatGroups);
   }
 
-  _selectAllEvent() {
-    _chatGroups = _chatGroups.map((T cg) {
+  selectAllEvent() {
+    chatGroups = chatGroups.map((T cg) {
       return cg.copyWith(selected: true);
     }).toList();
 
-    _chatGroupsStreamController.add(this._chatGroups);
-    this._selectedStreamController.add(this._chatGroups);
+    chatGroupsStreamController.add(this.chatGroups);
+    this.selectedStreamController.add(this.chatGroups);
   }
 
-  _deleteSelectedEvent() {
-    List<T> allSelected = _chatGroups.selected();
-    _chatGroups.removeWhere((T cg) => allSelected.contains(cg));
+  deleteSelectedEvent() {
+    List<T> allSelected = chatGroups.selected();
+    chatGroups.removeWhere((T cg) => allSelected.contains(cg));
 
-    _unselectAll();
-    _stateStreamController.add(ChatListState.list);
+    // This fires widget.onDeleted
+    this.dispatchCallback.add(DeletedCallbackEvent(allSelected));
+
+    unselectAll();
+    stateStreamController.add(ChatListState.list);
   }
 
-  _pinSelectedEvent() {
-    List<T> allSelected = _chatGroups.selected();
-    _chatGroups = _chatGroups.map((T cg) {
+  pinSelectedEvent() {
+    List<T> allSelected = chatGroups.selected();
+    chatGroups = chatGroups.map((T cg) {
       bool selected = allSelected.contains(cg);
       if (selected) {
         return cg.copyWith(pinned: !cg.pinned);
@@ -132,13 +186,21 @@ class ChatListScreenLogic<T extends ChatGroup> {
       return cg;
     }).toList();
 
-    _unselectAll();
-    _stateStreamController.add(ChatListState.list);
+    // This fires widget.onTogglePinned
+    this.dispatchCallback.add(TogglePinnedCallbackEvent(allSelected));
+
+    // Move pinned to the top
+    List<T> allPinned = chatGroups.pinned();
+    chatGroups.removeWhere((cg) => allPinned.contains(cg));
+    chatGroups.insertAll(0, allPinned);
+
+    unselectAll();
+    stateStreamController.add(ChatListState.list);
   }
 
-  _markSelectedUnreadEvent() {
-    List<T> allSelected = _chatGroups.selected();
-    _chatGroups = _chatGroups.map((T cg) {
+  markSelectedUnreadEvent() {
+    List<T> allSelected = chatGroups.selected();
+    chatGroups = chatGroups.map((T cg) {
       bool selected = allSelected.contains(cg);
       if (selected) {
         return cg.copyWith(seen: false);
@@ -146,27 +208,41 @@ class ChatListScreenLogic<T extends ChatGroup> {
       return cg;
     }).toList();
 
-    _unselectAll();
-    _stateStreamController.add(ChatListState.list);
+    // This fires widget.onMarkedSeen
+    this.dispatchCallback.add(MarkedSeenCallbackEvent(allSelected));
+
+    unselectAll();
+    stateStreamController.add(ChatListState.list);
   }
 
-  _archiveSelectedEvent() {
-    List<T> allSelected = _chatGroups.selected();
-    _chatGroups = _chatGroups.map((T cg) {
+  archiveSelectedEvent() {
+    List<T> allSelected = chatGroups.selected();
+    chatGroups = chatGroups.map((T cg) {
       bool selected = allSelected.contains(cg);
       if (selected) {
-        return cg.copyWith(archived: !cg.archived);
+        return cg.copyWith(archived: true, selected: false);
       }
       return cg;
     }).toList();
 
-    _unselectAll();
-    _stateStreamController.add(ChatListState.list);
+    // This fires widget.onArchived
+    this.dispatchCallback.add(ArchivedCallbackEvent(allSelected));
+
+    // Get all archived, remov ethem from the list
+    List<T> allArchived = chatGroups.archivedIs(true);
+    chatGroups.removeWhere((cg) => allArchived.contains(cg));
+
+    archivedGroups.addAll(allArchived);
+    archivedChatGroupsStreamController.add(archivedGroups);
+
+    unselectAll();
+
+    stateStreamController.add(ChatListState.list);
   }
 
-  _muteSelectedEvent() {
-    List<T> allSelected = _chatGroups.selected();
-    _chatGroups = _chatGroups.map((T cg) {
+  muteSelectedEvent() {
+    List<T> allSelected = chatGroups.selected();
+    chatGroups = chatGroups.map((T cg) {
       bool selected = allSelected.contains(cg);
       if (selected) {
         return cg.copyWith(muted: !cg.muted);
@@ -174,97 +250,105 @@ class ChatListScreenLogic<T extends ChatGroup> {
       return cg;
     }).toList();
 
-    _unselectAll();
-    _stateStreamController.add(ChatListState.list);
+    // This fires widget.onToggleMuted
+    this.dispatchCallback.add(ToggleMutedCallbackEvent(allSelected));
+
+    unselectAll();
+    stateStreamController.add(ChatListState.list);
   }
 
-  final _eventController = StreamController<ChatListEvent>();
-
+  final eventController = StreamController<ChatListEvent>();
   Sink<ChatListEvent> get dispatch {
-    return _eventController.sink;
+    return eventController.sink;
   }
 
-  final _stateStreamController = StreamController<ChatListState>.broadcast();
-  StreamSink<ChatListState> get stateSink => _stateStreamController.sink;
-  Stream<ChatListState> get stateStream => _stateStreamController.stream;
-  _setStateEvent(SetStateEvent event) {
+  final callbackEventController = StreamController<ChatListCallbackEvent>();
+  Stream<ChatListCallbackEvent> get callbackEventControllerStream =>
+      callbackEventController.stream;
+  Sink<ChatListCallbackEvent> get dispatchCallback {
+    return callbackEventController.sink;
+  }
+
+  final stateStreamController = StreamController<ChatListState>.broadcast();
+  StreamSink<ChatListState> get stateSink => stateStreamController.sink;
+  Stream<ChatListState> get stateStream => stateStreamController.stream;
+  setStateEvent(SetStateEvent event) {
     stateSink.add(event.state);
   }
 
-  final _selectedStreamController = StreamController<List<T>>.broadcast();
+  final selectedStreamController = StreamController<List<T>>.broadcast();
   StreamSink<List<T>> get selectedChatGroupsSink =>
-      _selectedStreamController.sink;
+      selectedStreamController.sink;
   Stream<List<T>> get selectedChatGroupsStream =>
-      _selectedStreamController.stream;
+      selectedStreamController.stream;
 
-  _toggleSelectedEvent(ToggleSelectedEvent event) {
-    int index = this._chatGroups.indexOf(event.chatGroup);
-    T oldChatGroup = this._chatGroups.elementAt(index);
+  toggleSelectedEvent(ToggleSelectedEvent event) {
+    int index = this.chatGroups.indexOf(event.chatGroup);
+    T oldChatGroup = this.chatGroups.elementAt(index);
     T newChatGroup = event.chatGroup.copyWith(selected: !oldChatGroup.selected);
 
-    this._chatGroups.replaceRange(index, index + 1, [newChatGroup]);
+    this.chatGroups.replaceRange(index, index + 1, [newChatGroup]);
 
-    _chatGroupsStreamController.add(this._chatGroups);
+    chatGroupsStreamController.add(this.chatGroups);
 
-    List<T> allSelected = this._chatGroups.selected();
+    List<T> allSelected = this.chatGroups.selected();
     if (allSelected.length > 0 &&
-        this._currentState != ChatListState.selection) {
-      _stateStreamController.add(ChatListState.selection);
+        this.currentState != ChatListState.selection) {
+      stateStreamController.add(ChatListState.selection);
     }
 
-    this._selectedStreamController.add(allSelected);
+    this.selectedStreamController.add(allSelected);
   }
 
-  _unselectAll() {
-    this._chatGroups = _chatGroups.map((T cg) {
+  unselectAll() {
+    this.chatGroups = chatGroups.map((T cg) {
       return cg.copyWith(selected: false);
     }).toList();
 
-    _chatGroupsStreamController.add(this._chatGroups);
-    this._selectedStreamController.add([]);
+    chatGroupsStreamController.add(this.chatGroups);
+    this.selectedStreamController.add([]);
   }
 
-  final _visibleChatGroupsStreamController = StreamController<List<T>>();
+  final visibleChatGroupsStreamController = StreamController<List<T>>();
   StreamSink<List<T>> get visibleChatGroupsSink =>
-      _visibleChatGroupsStreamController.sink;
+      visibleChatGroupsStreamController.sink;
   Stream<List<T>> get visibleChatGroupsStream =>
-      _visibleChatGroupsStreamController.stream;
+      visibleChatGroupsStreamController.stream;
 
-  final _chatGroupsStreamController = StreamController<List<T>>.broadcast();
-  StreamSink<List<T>> get chatGroupsSink => _chatGroupsStreamController.sink;
+  final chatGroupsStreamController = StreamController<List<T>>.broadcast();
+  StreamSink<List<T>> get chatGroupsSink => chatGroupsStreamController.sink;
   Stream<List<T>> get chatGroupsStreamStream =>
-      _chatGroupsStreamController.stream;
+      chatGroupsStreamController.stream;
 
-  _setChatGroups(SetChatGroupsEvent event) {
+  setChatGroups(SetChatGroupsEvent event) {
     List<T> newChatGroups = event.chatGroups;
-    _chatGroups.addAll(newChatGroups);
+    chatGroups.addAll(newChatGroups);
 
-    _chatGroupsStreamController.add(_chatGroups);
+    chatGroupsStreamController.add(chatGroups);
 
     dispatch.add(SetStateEvent(ChatListState.list));
   }
 
-  _addChatGroups(AddChatGroupsEvent event) {
+  addChatGroups(AddChatGroupsEvent event) {
     List<T> newChatGroups = event.chatGroups;
-    _chatGroups.addAll(newChatGroups);
+    chatGroups.addAll(newChatGroups);
 
-    _chatGroupsStreamController.add(_chatGroups);
+    chatGroupsStreamController.add(chatGroups);
   }
 
-  final _archivedChatGroupsStreamController = StreamController<List<T>>();
+  final archivedChatGroupsStreamController = StreamController<List<T>>();
   StreamSink<List<T>> get archivedChatGroupsSink =>
-      _archivedChatGroupsStreamController.sink;
+      archivedChatGroupsStreamController.sink;
   Stream<List<T>> get archivedChatGroupsStream =>
-      _archivedChatGroupsStreamController.stream;
-
-  _setArchivedChatGroups(SetArchivedChatGroupsEvent event) {}
+      archivedChatGroupsStreamController.stream;
 
   dispose() {
-    _archivedChatGroupsStreamController.close();
-    _stateStreamController.close();
-    _chatGroupsStreamController.close();
-    _visibleChatGroupsStreamController.close();
-    _selectedStreamController.close();
-    _eventController.close();
+    archivedChatGroupsStreamController.close();
+    stateStreamController.close();
+    chatGroupsStreamController.close();
+    visibleChatGroupsStreamController.close();
+    selectedStreamController.close();
+    eventController.close();
+    callbackEventController.close();
   }
 }

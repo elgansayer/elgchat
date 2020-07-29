@@ -1,6 +1,9 @@
 # elgchat
 
 Features
+Chat Screen
+
+Features
 Chat List
 
 * Generic extendable model

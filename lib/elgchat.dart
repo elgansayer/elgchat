@@ -6,6 +6,9 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
 import 'package:appbar_textfield/appbar_textfield.dart';
 import 'package:flutter/material.dart';
+import 'archived_chat_list_bloc.dart';
+import 'archived_chat_list_state.dart';
+import 'bloc/chat_list_callback_events.dart';
 import 'bloc/chat_list_events.dart';
 import 'chat_list_bloc.dart';
 import 'models.dart';
@@ -15,54 +18,86 @@ typedef LoadChatGroupsCallback<T extends ChatGroup> = Future<List<T>>
 typedef LoadMoreChatGroupsCallback<T extends ChatGroup> = Future<List<T>>
     Function();
 
-class ChatListScreen<TChatGroup extends ChatGroup> extends StatefulWidget {
+class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
+    extends StatefulWidget {
   // State of the widgets view
   final LoadChatGroupsCallback onLoadChatGroups;
   final LoadMoreChatGroupsCallback onLoadMoreChatGroups;
+  final String title;
 
-  final ElgChatListScreenState Function() stateCreator;
+  final ChatListScreenState Function() stateCreator;
+  final ChatListScreenLogic Function() logicCreator;
+  final ArchivedChatListScreenLogic Function() archiveLogicCreator;
+  final ArchivedChatListScreenState Function() archiveStateCreator;
+
+  // Fired when chat groups are unarchived
+  final Function(List<T> chatGroups) onUnarchived;
+  // Fired when chat groups are deleted
+  final Function(List<T> chatGroups) onDeleted;
+  // Fired when chat groups are archived
+  final Function(List<T> chatGroups) onArchived;
+  // Fired when chat groups are marked seen
+  final Function(List<T> chatGroups) onMarkedSeen;
+  // Fired when chat groups are pinned
+  final Function(List<T> chatGroups) onTogglePinned;
+  // Fired when chat groups are muted
+  final Function(List<T> chatGroups) onToggleMuted;
 
   ChatListScreen(
       {Key key,
       this.stateCreator,
+      this.logicCreator,
       this.onLoadChatGroups,
-      this.onLoadMoreChatGroups})
+      this.onLoadMoreChatGroups,
+      this.title = 'Chat list',
+      this.archiveLogicCreator,
+      this.archiveStateCreator,
+      this.onUnarchived,
+      this.onDeleted,
+      this.onArchived,
+      this.onMarkedSeen,
+      this.onTogglePinned,
+      this.onToggleMuted})
       : super(key: key);
 
   @override
-  ElgChatListScreenState createState() {
+  ChatListScreenState createState() {
     if (stateCreator == null) {
-      return ElgChatListScreenState<TChatGroup>();
+      return ChatListScreenState<T, L>();
     } else {
       return this.stateCreator();
     }
   }
 }
 
-class ElgChatListScreenState<TChatGroup extends ChatGroup>
+class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
     extends State<ChatListScreen> {
   // The controller for the list view
-  ScrollController _scrollController = new ScrollController();
+  ScrollController scrollController = new ScrollController();
 
-  ChatListScreenLogic<ChatGroup> _bloc;
+  ChatListScreenLogic bloc;
 
-  static ElgChatListScreenState creator() {
-    return new ElgChatListScreenState();
+  static ChatListScreenState creator() {
+    return new ChatListScreenState();
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    _bloc.dispose();
+    scrollController.dispose();
+    bloc.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    _bloc = ChatListScreenLogic();
+    if (widget.logicCreator == null) {
+      bloc = ChatListScreenLogic();
+    } else {
+      bloc = widget.logicCreator();
+    }
 
     super.initState();
-    _scrollController.addListener(scrollControllerListener);
+    scrollController.addListener(scrollControllerListener);
 
     // Load first chat groups
     this.initLoadChatGroups();
@@ -70,29 +105,80 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
 
   void initLoadChatGroups() async {
     List<ChatGroup> chatGroups = await widget.onLoadChatGroups();
-    _bloc.dispatch.add(SetChatGroupsEvent(chatGroups));
+    bloc.dispatch.add(SetChatGroupsEvent(chatGroups));
   }
 
   void loadMoreChatGroups() async {
     List<ChatGroup> chatGroups = await widget.onLoadMoreChatGroups();
-    _bloc.dispatch.add(AddChatGroupsEvent(chatGroups));
+    bloc.dispatch.add(AddChatGroupsEvent(chatGroups));
   }
 
   void scrollControllerListener() {
-    if (_scrollController.position.atEdge &&
-        _scrollController.position.pixels > 1) {
+    if (scrollController.position.atEdge &&
+        scrollController.position.pixels > 1) {
       this.loadMoreChatGroups();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return buildScaffold();
+    return StreamBuilder<ChatListCallbackEvent>(
+        stream: this.bloc.callbackEventControllerStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            handleCallbackEvent(snapshot.data);
+          }
+          return buildScaffold();
+        });
+  }
+
+  handleCallbackEvent(ChatListCallbackEvent event) {
+    if (event is UnarchivedCallbackEvent) {
+      if (widget.onUnarchived == null) {
+        return;
+      }
+      widget.onUnarchived(event.chatGroups);
+    }
+
+    if (event is DeletedCallbackEvent) {
+      if (widget.onDeleted == null) {
+        return;
+      }
+      widget.onDeleted(event.chatGroups);
+    }
+
+    if (event is ToggleMutedCallbackEvent) {
+      if (widget.onToggleMuted == null) {
+        return;
+      }
+      widget.onToggleMuted(event.chatGroups);
+    }
+
+    if (event is TogglePinnedCallbackEvent) {
+      if (widget.onTogglePinned == null) {
+        return;
+      }
+      widget.onTogglePinned(event.chatGroups);
+    }
+
+    if (event is MarkedSeenCallbackEvent) {
+      if (widget.onMarkedSeen == null) {
+        return;
+      }
+      widget.onMarkedSeen(event.chatGroups);
+    }
+
+    if (event is ArchivedCallbackEvent) {
+      if (widget.onArchived == null) {
+        return;
+      }
+      widget.onArchived(event.chatGroups);
+    }
   }
 
   buildScaffold() {
     return StreamBuilder<ChatListState>(
-        stream: this._bloc.stateStream,
+        stream: this.bloc.stateStream,
         builder: (context, snapshot) {
           return Scaffold(
               appBar: buildScaffoldAppBar(snapshot.data),
@@ -102,74 +188,80 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
 
   buildScaffoldAppBar(ChatListState state) {
     if (state == null) {
-      return AppBar(title: Text("Chat List"));
+      return AppBar(title: Text(widget.title));
     }
 
     if (state != ChatListState.selection) {
-      return AppBarTextField(
-        title: Text("Chat List"),
-        onChanged: (String phrase) {
-          this._bloc.dispatch.add(SetSearchString(phrase));
-        },
-        onBackPressed: () {
-          this._bloc.dispatch.add(ClearSearchString());
-        },
-        onClearPressed: () {
-          this._bloc.dispatch.add(ClearSearchString());
-        },
-        trailingActionButtons: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: openNewChatScreen,
-          )
-        ],
-      );
+      return buildListAppBar();
     }
 
+    return buildSelectionAppbar();
+  }
+
+  buildSelectionAppbar() {
     return AppBar(
       leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            this._bloc.dispatch.add(SetStateEvent(ChatListState.list));
+            this.bloc.dispatch.add(SetStateEvent(ChatListState.list));
           }),
-      title: StreamBuilder<List<TChatGroup>>(
-          stream: this._bloc.selectedChatGroupsStream,
+      title: StreamBuilder<List<T>>(
+          stream: this.bloc.selectedChatGroupsStream,
           builder: (context, snapshot) {
             String selectedCount =
                 snapshot.hasData ? snapshot.data.length.toString() : '1';
             return Text(selectedCount);
           }),
       actions: <Widget>[
-        Tooltip(
-            message: 'Pin Toggle',
-            child: IconButton(
-                icon: Icon(Icons.person_pin), onPressed: pinSelected)),
-        Tooltip(
-            message: 'Delete',
-            child: IconButton(
-                icon: Icon(Icons.delete), onPressed: deleteSelected)),
-        Tooltip(
-            message: 'Mute Toggle',
-            child: IconButton(
-                icon: Icon(Icons.volume_mute), onPressed: muteSelected)),
-        Tooltip(
-            message: 'Archive',
-            child: IconButton(
-                icon: Icon(Icons.archive), onPressed: archiveSelected)),
-        Tooltip(
-            message: 'Mark Unread',
-            child: IconButton(
-                icon: Icon(Icons.markunread), onPressed: markSelectedUnread)),
+        pinButton(),
+        deleteButton(),
+        muteToggleButton(),
+        archiveButton(),
+        markUnreadButton(),
         moreMenuButton()
       ],
     );
+  }
+
+  pinButton() {
+    return Tooltip(
+        message: 'Pin Toggle',
+        child:
+            IconButton(icon: Icon(Icons.person_pin), onPressed: pinSelected));
+  }
+
+  deleteButton() {
+    return Tooltip(
+        message: 'Delete',
+        child: IconButton(icon: Icon(Icons.delete), onPressed: deleteSelected));
+  }
+
+  muteToggleButton() {
+    return Tooltip(
+        message: 'Mute Toggle',
+        child:
+            IconButton(icon: Icon(Icons.volume_mute), onPressed: muteSelected));
+  }
+
+  archiveButton() {
+    return Tooltip(
+        message: 'Archive',
+        child:
+            IconButton(icon: Icon(Icons.archive), onPressed: archiveSelected));
+  }
+
+  markUnreadButton() {
+    return Tooltip(
+        message: 'Mark Unread',
+        child: IconButton(
+            icon: Icon(Icons.markunread), onPressed: markSelectedUnread));
   }
 
   moreMenuButton() {
     return PopupMenuButton<String>(
       onSelected: (String value) {
         if (value == 'SelectAll') {
-          this._bloc.dispatch.add(SelectAllEvent());
+          this.bloc.dispatch.add(SelectAllEvent());
         }
       },
       child: Tooltip(message: 'More', child: Icon(Icons.more_vert)),
@@ -182,24 +274,45 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
     );
   }
 
+  buildListAppBar() {
+    return AppBarTextField(
+      title: Text(widget.title),
+      onChanged: (String phrase) {
+        this.bloc.dispatch.add(SetSearchString(phrase));
+      },
+      onBackPressed: () {
+        this.bloc.dispatch.add(ClearSearchString());
+      },
+      onClearPressed: () {
+        this.bloc.dispatch.add(ClearSearchString());
+      },
+      trailingActionButtons: <Widget>[
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: openNewChatScreen,
+        )
+      ],
+    );
+  }
+
   muteSelected() {
-    this._bloc.dispatch.add(MuteSelectedEvent());
+    this.bloc.dispatch.add(MuteSelectedEvent());
   }
 
   archiveSelected() {
-    this._bloc.dispatch.add(ArchiveSelectedEvent());
+    this.bloc.dispatch.add(ArchiveSelectedEvent());
   }
 
   pinSelected() {
-    this._bloc.dispatch.add(PinSelectedEvent());
+    this.bloc.dispatch.add(PinSelectedEvent());
   }
 
   deleteSelected() {
-    this._bloc.dispatch.add(DeleteSelectedEvent());
+    this.bloc.dispatch.add(DeleteSelectedEvent());
   }
 
   markSelectedUnread() {
-    this._bloc.dispatch.add(MarkSelectedUnreadEvent());
+    this.bloc.dispatch.add(MarkSelectedUnreadEvent());
   }
 
   openNewChatScreen() {}
@@ -211,6 +324,7 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
 
     switch (state) {
       case ChatListState.list:
+      // case ChatListState.list_archived:
       case ChatListState.selection:
         return buildChatGroupList();
         break;
@@ -225,8 +339,8 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
   }
 
   buildChatGroupList() {
-    return StreamBuilder<List<TChatGroup>>(
-        stream: this._bloc.visibleChatGroupsStream,
+    return StreamBuilder<List<T>>(
+        stream: this.bloc.visibleChatGroupsStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Container(
@@ -239,7 +353,7 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
             children: <Widget>[
               Expanded(
                 child: ListView.builder(
-                  controller: _scrollController,
+                  controller: scrollController,
                   itemCount: visibleChats.length,
                   itemBuilder: (context, index) {
                     return buildChatGroupTile(visibleChats[index]);
@@ -253,8 +367,8 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
   }
 
   buildArchivedButton() {
-    return StreamBuilder<List<TChatGroup>>(
-        stream: this._bloc.archivedChatGroupsStream,
+    return StreamBuilder<List<T>>(
+        stream: this.bloc.archivedChatGroupsStream,
         builder: (context, archivedSnapshot) {
           if (!archivedSnapshot.hasData || archivedSnapshot.data.length < 1) {
             return Container();
@@ -262,12 +376,52 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
 
           return ListTile(
             title: Text("Archived ${archivedSnapshot.data.length}"),
-            onTap: () {},
+            onTap: () {
+              // this._bloc.dispatch.add(ViewArchivedEvent());
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        ChatListScreen<ChatGroup, ArchivedChatListScreenLogic>(
+                          title: "Archived",
+                          onUnarchived: (List<ChatGroup> unarchived) {
+                            this.bloc.dispatch.add(UnArchivedEvent(unarchived));
+                          },
+                          onDeleted: (List<ChatGroup> unarchived) {
+                            this
+                                .bloc
+                                .dispatch
+                                .add(DeletedArchivedEvent(unarchived));
+                          },
+                          stateCreator: () {
+                            if (widget.archiveStateCreator != null) {
+                              return widget.archiveStateCreator();
+                            } else {
+                              return ArchivedChatListScreenState();
+                            }
+                          },
+                          logicCreator: () {
+                            if (widget.archiveLogicCreator != null) {
+                              return widget.archiveLogicCreator();
+                            } else {
+                              return ArchivedChatListScreenLogic();
+                            }
+                          },
+                          onLoadChatGroups: () async {
+                            return Future.value(archivedSnapshot.data);
+                          },
+                          // onLoadMoreChatGroups: () async {
+                          //   return Future.value(archivedSnapshot.data);
+                          // },
+                          // stateCreator: () => MyChatScreenState(),
+                        )),
+              );
+            },
           );
         });
   }
 
-  buildChatGroupTile(TChatGroup chatGroup) {
+  buildChatGroupTile(T chatGroup) {
     return Container(
       color: chatGroup.selected ? Colors.blue[100] : null,
       child: ListTile(
@@ -304,7 +458,7 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
     );
   }
 
-  Widget buildDateTime(TChatGroup chatGroup) {
+  Widget buildDateTime(T chatGroup) {
     DateTime dateTime = chatGroup.date.toUtc();
     String dateString = formatDateString(dateTime);
     return Text(dateString, style: TextStyle(color: Colors.grey));
@@ -322,21 +476,21 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
     }
   }
 
-  Widget buildPinned(TChatGroup chatGroup) {
+  Widget buildPinned(T chatGroup) {
     return Icon(Icons.person_pin, color: Colors.grey);
   }
 
-  Widget buildMuted(TChatGroup chatGroup) {
+  Widget buildMuted(T chatGroup) {
     return Icon(Icons.volume_mute, color: Colors.grey);
   }
 
-  Widget buildNotSeen(TChatGroup chatGroup) {
+  Widget buildNotSeen(T chatGroup) {
     return CircleAvatar(
       radius: 5,
     );
   }
 
-  buildChatGroupAvatar(TChatGroup chatGroup) {
+  buildChatGroupAvatar(T chatGroup) {
     Widget avatar = CircleAvatar(
       child: chatGroup.avatarUrl != null
           ? CachedNetworkImage(
@@ -367,14 +521,14 @@ class ElgChatListScreenState<TChatGroup extends ChatGroup>
     );
   }
 
-  onChatGroupTileTap(TChatGroup chatGroup) {
-    if (this._bloc.currentState == ChatListState.selection) {
-      _bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
+  onChatGroupTileTap(T chatGroup) {
+    if (this.bloc.currentState == ChatListState.selection) {
+      bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
     }
   }
 
-  onChatGroupTileLongPress(TChatGroup chatGroup) {
-    _bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
+  onChatGroupTileLongPress(T chatGroup) {
+    bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
   }
 }
 

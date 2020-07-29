@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 enum ChatListState {
   loading,
   list,
+  // list_archived,
   selection,
 }
 

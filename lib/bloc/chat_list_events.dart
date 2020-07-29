@@ -11,6 +11,7 @@ class SetSearchString extends ChatListEvent {
   final String phrase;
   SetSearchString(this.phrase);
 }
+
 class ClearSearchString extends ChatListEvent {
   ClearSearchString();
 }
@@ -63,3 +64,17 @@ class SetArchivedChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
   final List<T> chatGroups;
   SetArchivedChatGroupsEvent(this.chatGroups);
 }
+
+class UnArchivedEvent<T extends ChatGroup> extends ChatListEvent {
+  final List<T> chatGroups;
+  UnArchivedEvent(this.chatGroups);
+}
+
+class DeletedArchivedEvent<T extends ChatGroup> extends ChatListEvent {
+  final List<T> chatGroups;
+  DeletedArchivedEvent(this.chatGroups);
+}
+
+// class ViewArchivedEvent extends ChatListEvent {
+//   ViewArchivedEvent();
+// }

@@ -82,4 +82,4 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class MyChatScreenState extends ElgChatListScreenState {}
+class MyChatScreenState extends ChatListScreenState {}
