@@ -35,6 +35,21 @@ class _HomeScreenState extends State<HomeScreen> {
     //   );
     // });
 
+    return MaterialApp(
+      title: 'ElgChat Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: ChatListScreen(
+        onLoadChatGroups: onLoadChatGroups,
+        onLoadMoreChatGroups: onLoadMoreChatGroups,
+        stateCreator: () => MyChatScreenState(),
+      ),
+    );
+  }
+
+  Future<List<ChatGroup>> onLoadChatGroups() async {
     var allChatGroups = List.generate(numItmes, (i) {
       // var randomInt = faker.randomGenerator.integer(20);
       return ChatGroup(
@@ -47,24 +62,23 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     });
 
-    return MaterialApp(
-      title: 'ElgChat Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: ChatListScreen(
-        onLoadMore: onLoadMore,
-        chatGroups: allChatGroups,
-        stateCreator: () => MyChatScreenState(),
-      ),
-    );
+    return allChatGroups;
   }
 
-  void onLoadMore() {
-    setState(() {
-      numItmes += 11;
+  Future<List<ChatGroup>>  onLoadMoreChatGroups() async {
+    var allChatGroups = List.generate(numItmes, (i) {
+      // var randomInt = faker.randomGenerator.integer(20);
+      return ChatGroup(
+        id: i.toString(),
+        groupName: faker.internet.userName(),
+        // contacts: allContacts.sublist(0, randomInt),
+        lastMessage: faker.lorem.sentence(),
+        date: faker.date.dateTime(),
+        seen: faker.randomGenerator.boolean(),
+      );
     });
+
+    return allChatGroups;
   }
 }
 

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum ChatState {
+enum ChatListState {
   loading,
   list,
   selection,
@@ -23,16 +23,20 @@ class ChatGroup extends Equatable {
   final bool seen;
   final String avatarUrl;
   final bool selected;
-  final bool isArchived;
+  final bool archived;
+  final bool muted;
+  final bool pinned;
 
   ChatGroup(
-      {this.isArchived,
-      this.selected,
+      {this.pinned = false,
+      this.muted = false,
+      this.archived = false,
+      this.selected = false,
       this.avatarUrl,
       this.id,
       this.lastMessage,
       this.date,
-      this.seen,
+      this.seen = false,
       this.groupName})
       : assert(id != null);
 
@@ -44,10 +48,14 @@ class ChatGroup extends Equatable {
     bool seen,
     String avatarUrl,
     bool selected,
-    bool isArchived,
+    bool archived,
+    bool muted,
+    bool pinned
   }) {
     return ChatGroup(
-        isArchived: isArchived ?? this.isArchived,
+        muted: muted ?? this.muted,
+        pinned: pinned ?? this.pinned,
+        archived: archived ?? this.archived,
         selected: selected ?? this.selected,
         avatarUrl: avatarUrl ?? this.avatarUrl,
         id: id ?? this.id,
