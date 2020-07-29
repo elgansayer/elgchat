@@ -1,85 +1,49 @@
-import 'package:elgchat/models.dart';
 import 'package:flutter/material.dart';
-import 'package:elgchat/elgchat.dart';
-import 'package:faker/faker.dart';
+import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:elgchat_example/authentication_bloc/authentication_bloc.dart';
+import 'package:elgchat_example/user_repository.dart';
+import 'package:elgchat_example/home_screen.dart';
+import 'package:elgchat_example/login/login.dart';
+import 'package:elgchat_example/splash_screen.dart';
+import 'package:elgchat_example/simple_bloc_observer.dart';
 
 void main() {
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  Bloc.observer = SimpleBlocObserver();
+  final UserRepository userRepository = UserRepository();
+  runApp(
+    BlocProvider(
+      create: (context) => AuthenticationBloc(
+        userRepository: userRepository,
+      )..add(AuthenticationStarted()),
+      child: App(userRepository: userRepository),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class App extends StatelessWidget {
+  final UserRepository _userRepository;
+
+  App({Key key, @required UserRepository userRepository})
+      : assert(userRepository != null),
+        _userRepository = userRepository,
+        super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return HomeScreen();
-  }
-}
-
-class HomeScreen extends StatefulWidget {
-  HomeScreen({Key key}) : super(key: key);
-
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int numItmes = 11;
-
-  @override
-  Widget build(BuildContext context) {
-    // var allContacts = List.generate(22, (i) {
-    //   return Contact(
-    //     username: faker.internet.userName(),
-    //     photoUrl: "",
-    //     lastOnline: faker.date.dateTime(),
-    //     isActive: faker.randomGenerator.boolean(),
-    //   );
-    // });
-
     return MaterialApp(
-      title: 'ElgChat Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: ChatListScreen(
-        onLoadChatGroups: onLoadChatGroups,
-        onLoadMoreChatGroups: onLoadMoreChatGroups,
-        stateCreator: () => MyChatScreenState(),
+      home: BlocBuilder<AuthenticationBloc, AuthenticationState>(
+        builder: (context, state) {
+          if (state is AuthenticationFailure) {
+            return LoginScreen(userRepository: _userRepository);
+          }
+          if (state is AuthenticationSuccess) {
+            return HomeScreen(name: state.displayName);
+          }
+          return SplashScreen();
+        },
       ),
     );
   }
-
-  Future<List<ChatGroup>> onLoadChatGroups() async {
-    var allChatGroups = List.generate(numItmes, (i) {
-      // var randomInt = faker.randomGenerator.integer(20);
-      return ChatGroup(
-        id: i.toString(),
-        groupName: faker.internet.userName(),
-        // contacts: allContacts.sublist(0, randomInt),
-        lastMessage: faker.lorem.sentence(),
-        date: faker.date.dateTime(),
-        seen: faker.randomGenerator.boolean(),
-      );
-    });
-
-    return allChatGroups;
-  }
-
-  Future<List<ChatGroup>>  onLoadMoreChatGroups() async {
-    var allChatGroups = List.generate(numItmes, (i) {
-      // var randomInt = faker.randomGenerator.integer(20);
-      return ChatGroup(
-        id: i.toString(),
-        groupName: faker.internet.userName(),
-        // contacts: allContacts.sublist(0, randomInt),
-        lastMessage: faker.lorem.sentence(),
-        date: faker.date.dateTime(),
-        seen: faker.randomGenerator.boolean(),
-      );
-    });
-
-    return allChatGroups;
-  }
 }
-
-class MyChatScreenState extends ChatListScreenState {}

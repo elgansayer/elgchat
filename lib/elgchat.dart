@@ -58,7 +58,8 @@ class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
       this.onArchived,
       this.onMarkedSeen,
       this.onTogglePinned,
-      this.onToggleMuted, this.onLoadMoreArchivedChatGroups})
+      this.onToggleMuted,
+      this.onLoadMoreArchivedChatGroups})
       : super(key: key);
 
   @override
@@ -411,11 +412,11 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
                           onLoadChatGroups: () async {
                             return Future.value(archivedSnapshot.data);
                           },
-                          onLoadMoreChatGroups: () async {
-                            if(widget.onLoadMoreArchivedChatGroups != null)
-                            {
-                              return widget.onLoadMoreArchivedChatGroups
+                          onLoadMoreChatGroups: () {
+                            if (widget.onLoadMoreArchivedChatGroups != null) {
+                              return widget.onLoadMoreArchivedChatGroups();
                             }
+                            return null;
                           },
                           // stateCreator: () => MyChatScreenState(),
                         )),
