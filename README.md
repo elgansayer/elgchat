@@ -1,14 +1,30 @@
 # elgchat
 
-A new Flutter package project.
+Features
+Chat List
 
-## Getting Started
+* Generic extendable model
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+* Overrideable state class allowing extended extension of look and behaviour
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+* Overrideable logic class allowing extended extension of behaviour
+
+* AppBar Searchable chat list
+
+* Supports selecting chats
+
+* Supports select all chats
+
+* Supports pinning
+
+* Supports archiving chats
+
+* Supports deleting chats
+
+* Supports muting chats
+
+* Supports mark unread
+
+* Callbacks on list actions
+
+* Split logic class without using bloc dependencies
