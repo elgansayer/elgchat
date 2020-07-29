@@ -23,6 +23,7 @@ class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
   // State of the widgets view
   final LoadChatGroupsCallback onLoadChatGroups;
   final LoadMoreChatGroupsCallback onLoadMoreChatGroups;
+  final LoadMoreChatGroupsCallback onLoadMoreArchivedChatGroups;
   final String title;
 
   final ChatListScreenState Function() stateCreator;
@@ -57,7 +58,7 @@ class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
       this.onArchived,
       this.onMarkedSeen,
       this.onTogglePinned,
-      this.onToggleMuted})
+      this.onToggleMuted, this.onLoadMoreArchivedChatGroups})
       : super(key: key);
 
   @override
@@ -410,9 +411,12 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
                           onLoadChatGroups: () async {
                             return Future.value(archivedSnapshot.data);
                           },
-                          // onLoadMoreChatGroups: () async {
-                          //   return Future.value(archivedSnapshot.data);
-                          // },
+                          onLoadMoreChatGroups: () async {
+                            if(widget.onLoadMoreArchivedChatGroups != null)
+                            {
+                              return widget.onLoadMoreArchivedChatGroups
+                            }
+                          },
                           // stateCreator: () => MyChatScreenState(),
                         )),
               );
