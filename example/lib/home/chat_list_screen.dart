@@ -3,11 +3,10 @@ import 'package:elgchat/models.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
-  final String name;
+class ChatListPage extends StatelessWidget {
   int numItmes = 11;
 
-  HomeScreen({Key key, @required this.name}) : super(key: key);
+  ChatListPage({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
