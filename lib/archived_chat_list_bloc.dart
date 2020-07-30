@@ -1,4 +1,4 @@
-import 'package:elgchat/chat_list_bloc.dart';
+import 'package:elgchat/bloc/chat_list_bloc.dart';
 import 'bloc/chat_list_callback_events.dart';
 import 'models.dart';
 

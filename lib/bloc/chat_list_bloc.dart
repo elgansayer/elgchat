@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'bloc/chat_list_callback_events.dart';
-import 'bloc/chat_list_events.dart';
-import 'models.dart';
+import 'chat_list_callback_events.dart';
+import 'chat_list_events.dart';
+import '../models.dart';
 
 extension selectedExtension<E extends ChatGroup> on List<E> {
   List<E> selected() {

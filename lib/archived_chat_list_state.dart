@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'chat_list_bloc.dart';
+import 'bloc/chat_list_bloc.dart';
 import 'elgchat.dart';
 import 'models.dart';
 
