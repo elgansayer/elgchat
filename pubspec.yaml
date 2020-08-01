@@ -16,6 +16,8 @@ dependencies:
   appbar_textfield: ^1.0.1+1
   intl: ^0.16.1
   timeago: ^2.0.26
+  bubble: ^1.1.9+1
+  faker:
 
 
 

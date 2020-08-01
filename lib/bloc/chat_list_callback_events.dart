@@ -35,3 +35,9 @@ class ArchivedCallbackEvent<T extends ChatGroup> extends ChatListCallbackEvent {
   final List<T> chatGroups;
   ArchivedCallbackEvent(this.chatGroups);
 }
+
+class ChatGroupTappedCallbackEvent<T extends ChatGroup>
+    extends ChatListCallbackEvent {
+  final T chatGroup;
+  ChatGroupTappedCallbackEvent(this.chatGroup);
+}

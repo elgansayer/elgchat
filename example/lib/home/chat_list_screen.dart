@@ -1,6 +1,9 @@
 import 'package:elgchat/elgchat.dart';
+import 'package:elgchat_example/conversation/conversation_screen.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
+
+import 'find_user_screen.dart';
 
 class ChatListPage extends StatelessWidget {
   int numItmes = 11;
@@ -10,10 +13,21 @@ class ChatListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChatListScreen(
-      onLoadChatGroups: onLoadChatGroups,
-      onLoadMoreChatGroups: onLoadMoreChatGroups,
-      stateCreator: () => MyChatScreenState(),
-    );
+        onTap: (ChatGroup chatGroup) => onChatGroupTap(context, chatGroup),
+        onLoadChatGroups: onLoadChatGroups,
+        onLoadMoreChatGroups: onLoadMoreChatGroups,
+        stateCreator: () => MyChatScreenState(),
+        trailingActions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => onFindUserToChatTo(context),
+          )
+        ]);
+  }
+
+  void onChatGroupTap(BuildContext context, ChatGroup chatGroup) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => ConversationViewScreen(chatGroup: chatGroup)));
   }
 
   Future<List<ChatGroup>> onLoadChatGroups() async {
@@ -45,6 +59,11 @@ class ChatListPage extends StatelessWidget {
     });
 
     return allChatGroups;
+  }
+
+  onFindUserToChatTo(BuildContext context) async {
+    Contact contactSelected = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => FindUserScreen()));
   }
 }
 

@@ -31,19 +31,22 @@ class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
   final ArchivedChatListScreenState Function() archiveStateCreator;
 
   // Fired when chat groups are unarchived
-  final Function(List<T> chatGroups) onUnarchived;
+  final void Function(List<T> chatGroups) onUnarchived;
   // Fired when chat groups are deleted
-  final Function(List<T> chatGroups) onDeleted;
+  final void Function(List<T> chatGroups) onDeleted;
   // Fired when chat groups are archived
-  final Function(List<T> chatGroups) onArchived;
+  final void Function(List<T> chatGroups) onArchived;
   // Fired when chat groups are marked seen
-  final Function(List<T> chatGroups) onMarkedSeen;
+  final void Function(List<T> chatGroups) onMarkedSeen;
   // Fired when chat groups are pinned
-  final Function(List<T> chatGroups) onTogglePinned;
+  final void Function(List<T> chatGroups) onTogglePinned;
   // Fired when chat groups are muted
-  final Function(List<T> chatGroups) onToggleMuted;
-  // Show the add new chat user search icon button
-  final bool showAddChatBtn;
+  final void Function(List<T> chatGroups) onToggleMuted;
+  final void Function(T chatGroup) onSelected;
+  final void Function(T chatGroup) onTap;
+
+  final List<Widget> trailingActions;
+  final List<Widget> leadingActions;
 
   ChatListScreen(
       {Key key,
@@ -61,7 +64,10 @@ class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
       this.onTogglePinned,
       this.onToggleMuted,
       this.onLoadMoreArchivedChatGroups,
-      this.showAddChatBtn = true})
+      this.trailingActions,
+      this.leadingActions,
+      this.onSelected,
+      this.onTap})
       : super(key: key);
 
   @override
@@ -290,14 +296,8 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
       onClearPressed: () {
         this.bloc.dispatch.add(ClearSearchString());
       },
-      trailingActionButtons: <Widget>[
-        widget.showAddChatBtn
-            ? IconButton(
-                icon: Icon(Icons.add),
-                onPressed: openNewChatScreen,
-              )
-            : Container()
-      ],
+      leadingActionButtons: widget.leadingActions,
+      trailingActionButtons: widget.trailingActions,
     );
   }
 
@@ -326,8 +326,15 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
       context,
       MaterialPageRoute(
           builder: (context) => UserSearchScreen(
-                onUserSearch: () {
-                  return null;
+                onUserSearch: (String value) {
+                  return [
+                    Contact(
+                      username: 'nodnol',
+                      photoUrl: 'nodnol',
+                      lastOnline: DateTime.now(),
+                      isActive: false,
+                    )
+                  ];
                 },
               )),
     );
@@ -340,7 +347,6 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
 
     switch (state) {
       case ChatListState.list:
-      // case ChatListState.list_archived:
       case ChatListState.selection:
         return buildChatGroupList();
         break;
@@ -543,6 +549,9 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
   onChatGroupTileTap(T chatGroup) {
     if (this.bloc.currentState == ChatListState.selection) {
       bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
+      widget.onSelected(chatGroup);
+    } else {
+      widget.onTap(chatGroup);
     }
   }
 

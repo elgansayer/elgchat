@@ -27,6 +27,7 @@ class HomeForm extends StatelessWidget {
       builder: (context, state) {
         return Container(
           child: Scaffold(
+            // floatingActionButton: FloatingActionButton(onPressed: () {}),
             body: _buildBody(state.pageIndex),
             bottomNavigationBar: BottomNavigationBar(
               currentIndex: state.pageIndex,
