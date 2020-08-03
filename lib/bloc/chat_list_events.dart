@@ -27,8 +27,9 @@ class AddChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
 }
 
 class SetChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
+  final List<T> chatGroupsRef;
   final List<T> chatGroups;
-  SetChatGroupsEvent(this.chatGroups);
+  SetChatGroupsEvent(this.chatGroups, this.chatGroupsRef);
 }
 
 class SetStateEvent extends ChatListEvent {

@@ -3,7 +3,7 @@ import 'bloc/chat_list_callback_events.dart';
 import 'models.dart';
 
 class ArchivedChatListScreenLogic<T extends ChatGroup>
-    extends ChatListScreenLogic<T> {
+    extends ChatGroupListLogic<T> {
   @override
   archiveSelectedEvent() {
     List<T> allSelected = chatGroups.selected();
@@ -24,5 +24,17 @@ class ArchivedChatListScreenLogic<T extends ChatGroup>
 
     // This fires widget.onUnArchived
     this.dispatchCallback.add(UnarchivedCallbackEvent(allSelected));
+  }
+
+  selectAllEvent() {
+    chatGroups = chatGroups.map((T cg) {
+      if (cg.archived != true) {
+        return cg.copyWith(selected: true);
+      }
+      return cg.copyWith(selected: false);
+    }).toList();
+
+    chatGroupsStreamController.add(this.chatGroups);
+    this.selectedStreamController.add(this.chatGroups);
   }
 }

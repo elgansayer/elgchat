@@ -17,18 +17,20 @@ typedef LoadChatGroupsCallback<T extends ChatGroup> = Future<List<T>>
 typedef LoadMoreChatGroupsCallback<T extends ChatGroup> = Future<List<T>>
     Function();
 
-class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
+class ChatGroupList<T extends ChatGroup, L extends ChatGroupListLogic<T>>
     extends StatefulWidget {
   // State of the widgets view
-  final LoadChatGroupsCallback onLoadChatGroups;
-  final LoadMoreChatGroupsCallback onLoadMoreChatGroups;
+  // final LoadChatGroupsCallback onLoadChatGroups;
+  // final LoadMoreChatGroupsCallback onLoadMoreChatGroups;
+  final VoidCallback onLoadListAtEnd;
+
   final LoadMoreChatGroupsCallback onLoadMoreArchivedChatGroups;
   final String title;
 
-  final ChatListScreenState Function() stateCreator;
-  final ChatListScreenLogic Function() logicCreator;
+  final ChatGroupListState Function() stateCreator;
+  final ChatGroupListLogic Function() logicCreator;
   final ArchivedChatListScreenLogic Function() archiveLogicCreator;
-  final ArchivedChatListScreenState Function() archiveStateCreator;
+  final ArchivedChatGroupListState Function() archiveStateCreator;
 
   // Fired when chat groups are unarchived
   final void Function(List<T> chatGroups) onUnarchived;
@@ -47,13 +49,19 @@ class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
 
   final List<Widget> trailingActions;
   final List<Widget> leadingActions;
+  final Widget floatingActionBar;
 
-  ChatListScreen(
+  // A reference to a mutatable list
+  final List<T> chatGroupsRef;
+  // Non-mutated list
+  final List<T> chatGroups;
+
+  ChatGroupList(
       {Key key,
       this.stateCreator,
       this.logicCreator,
-      this.onLoadChatGroups,
-      this.onLoadMoreChatGroups,
+      // this.onLoadChatGroups,
+      this.onLoadListAtEnd,
       this.title = 'Chat list',
       this.archiveLogicCreator,
       this.archiveStateCreator,
@@ -67,60 +75,62 @@ class ChatListScreen<T extends ChatGroup, L extends ChatListScreenLogic<T>>
       this.trailingActions,
       this.leadingActions,
       this.onSelected,
-      this.onTap})
-      : super(key: key);
+      this.onTap,
+      this.chatGroupsRef,
+      this.chatGroups,
+      this.floatingActionBar})
+      : super(key: key) {
+    //  List<ChatGroup> chatGroups = await widget.onLoadChatGroups();
+  }
 
   @override
-  ChatListScreenState createState() {
+  ChatGroupListState createState() {
     if (stateCreator == null) {
-      return ChatListScreenState<T, L>();
+      return ChatGroupListState<T, L>();
     } else {
       return this.stateCreator();
     }
   }
 }
 
-class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
-    extends State<ChatListScreen> {
+class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
+    extends State<ChatGroupList> {
   // The controller for the list view
   ScrollController scrollController = new ScrollController();
+  ChatGroupListLogic<ChatGroup> bloc;
 
-  ChatListScreenLogic bloc;
-
-  static ChatListScreenState creator() {
-    return new ChatListScreenState();
+  static ChatGroupListState creator() {
+    return new ChatGroupListState();
   }
 
   @override
   void dispose() {
     scrollController.dispose();
-    bloc.dispose();
+    this.bloc.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    if (widget.logicCreator == null) {
-      bloc = ChatListScreenLogic();
-    } else {
-      bloc = widget.logicCreator();
-    }
-
     super.initState();
     scrollController.addListener(scrollControllerListener);
 
     // Load first chat groups
-    this.initLoadChatGroups();
+    // this.initLoadChatGroups();
   }
 
-  void initLoadChatGroups() async {
-    List<ChatGroup> chatGroups = await widget.onLoadChatGroups();
-    bloc.dispatch.add(SetChatGroupsEvent(chatGroups));
-  }
+  // void initLoadChatGroups() async {
+  //   List<ChatGroup> chatGroups = await widget.onLoadChatGroups();
+  //   bloc.dispatch.add(SetChatGroupsEvent(chatGroups));
+  // }
 
   void loadMoreChatGroups() async {
-    List<ChatGroup> chatGroups = await widget.onLoadMoreChatGroups();
-    bloc.dispatch.add(AddChatGroupsEvent(chatGroups));
+    //
+    if (widget.onLoadListAtEnd != null) {
+      widget.onLoadListAtEnd();
+    }
+
+    // this.bloc.dispatch.add(AddChatGroupsEvent(chatGroups));
   }
 
   void scrollControllerListener() {
@@ -132,6 +142,16 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.logicCreator == null && bloc == null) {
+      bloc = ChatGroupListLogic();
+    } else if (bloc == null) {
+      bloc = widget.logicCreator();
+    }
+
+    //
+    bloc.dispatch
+        .add(SetChatGroupsEvent(widget.chatGroups, widget.chatGroupsRef));
+
     return StreamBuilder<ChatListCallbackEvent>(
         stream: this.bloc.callbackEventControllerStream,
         builder: (context, snapshot) {
@@ -191,6 +211,7 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
         stream: this.bloc.stateStream,
         builder: (context, snapshot) {
           return Scaffold(
+              floatingActionButton: widget.floatingActionBar,
               appBar: buildScaffoldAppBar(snapshot.data),
               body: buildScaffoldBody(snapshot.data));
         });
@@ -404,7 +425,7 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                        ChatListScreen<ChatGroup, ArchivedChatListScreenLogic>(
+                        ChatGroupList<ChatGroup, ArchivedChatListScreenLogic>(
                           title: "Archived",
                           onUnarchived: (List<ChatGroup> unarchived) {
                             this.bloc.dispatch.add(UnArchivedEvent(unarchived));
@@ -419,7 +440,7 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
                             if (widget.archiveStateCreator != null) {
                               return widget.archiveStateCreator();
                             } else {
-                              return ArchivedChatListScreenState();
+                              return ArchivedChatGroupListState();
                             }
                           },
                           logicCreator: () {
@@ -429,16 +450,12 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
                               return ArchivedChatListScreenLogic();
                             }
                           },
-                          onLoadChatGroups: () async {
-                            return Future.value(archivedSnapshot.data);
-                          },
-                          onLoadMoreChatGroups: () {
-                            if (widget.onLoadMoreArchivedChatGroups != null) {
-                              return widget.onLoadMoreArchivedChatGroups();
+                          chatGroups: archivedSnapshot.data,
+                          onLoadListAtEnd: () {
+                            if (widget.onLoadListAtEnd != null) {
+                              return widget.onLoadListAtEnd();
                             }
-                            return null;
                           },
-                          // stateCreator: () => MyChatScreenState(),
                         )),
               );
             },
@@ -548,7 +565,7 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
 
   onChatGroupTileTap(T chatGroup) {
     if (this.bloc.currentState == ChatListState.selection) {
-      bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
+      this.bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
       widget.onSelected(chatGroup);
     } else {
       widget.onTap(chatGroup);
@@ -556,6 +573,6 @@ class ChatListScreenState<T extends ChatGroup, L extends ChatListScreenLogic<T>>
   }
 
   onChatGroupTileLongPress(T chatGroup) {
-    bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
+    this.bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
   }
 }

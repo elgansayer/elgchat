@@ -4,8 +4,8 @@ import 'bloc/chat_list_bloc.dart';
 import 'elgchat.dart';
 import 'models.dart';
 
-class ArchivedChatListScreenState<T extends ChatGroup,
-    L extends ChatListScreenLogic<T>> extends ChatListScreenState<T, L> {
+class ArchivedChatGroupListState<T extends ChatGroup,
+    L extends ChatGroupListLogic<T>> extends ChatGroupListState<T, L> {
   archiveButton() {
     return Tooltip(
         message: 'Unarchive',

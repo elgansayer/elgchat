@@ -18,13 +18,13 @@ extension selectedExtension<E extends ChatGroup> on List<E> {
   }
 }
 
-class ChatListScreenLogic<T extends ChatGroup> {
+class ChatGroupListLogic<T extends ChatGroup> {
   List<T> chatGroups = List<T>();
   List<T> archivedGroups = List<T>();
   ChatListState currentState = ChatListState.loading;
   // String searchString = "";
 
-  ChatListScreenLogic() {
+  ChatGroupListLogic() {
     eventController.stream.listen(handleGotEvent);
 
     listenToState();
@@ -65,9 +65,9 @@ class ChatListScreenLogic<T extends ChatGroup> {
       return toggleSelectedEvent(event);
     }
 
-    if (event is AddChatGroupsEvent) {
-      return addChatGroups(event);
-    }
+    // if (event is AddChatGroupsEvent) {
+    //   return addChatGroups(event);
+    // }
 
     if (event is SetChatGroupsEvent) {
       return setChatGroups(event);
@@ -158,7 +158,10 @@ class ChatListScreenLogic<T extends ChatGroup> {
 
   selectAllEvent() {
     chatGroups = chatGroups.map((T cg) {
-      return cg.copyWith(selected: true);
+      if (cg.archived != true) {
+        return cg.copyWith(selected: true);
+      }
+      return cg.copyWith(selected: false);
     }).toList();
 
     chatGroupsStreamController.add(this.chatGroups);
@@ -321,20 +324,28 @@ class ChatListScreenLogic<T extends ChatGroup> {
       chatGroupsStreamController.stream;
 
   setChatGroups(SetChatGroupsEvent event) {
-    List<T> newChatGroups = event.chatGroups;
-    chatGroups.addAll(newChatGroups);
+    // If we want to use a reference, else use mutatable list
+    if (event.chatGroupsRef != null) {
+      List<T> newChatGroups = event.chatGroupsRef;
+      chatGroups = newChatGroups;
+    } else {
+      List<T> newChatGroups = event.chatGroups;
+      chatGroups = [...newChatGroups];
+    }
 
     chatGroupsStreamController.add(chatGroups);
-
-    dispatch.add(SetStateEvent(ChatListState.list));
+    if (this.currentState == ChatListState.loading) {
+      // dispatch.add(SetStateEvent(ChatListState.list));
+      this.stateSink.add(ChatListState.list);
+    }
   }
 
-  addChatGroups(AddChatGroupsEvent event) {
-    List<T> newChatGroups = event.chatGroups;
-    chatGroups.addAll(newChatGroups);
+  // addChatGroups(AddChatGroupsEvent event) {
+  //   List<T> newChatGroups = event.chatGroups;
+  //   chatGroups.addAll(newChatGroups);
 
-    chatGroupsStreamController.add(chatGroups);
-  }
+  //   chatGroupsStreamController.add(chatGroups);
+  // }
 
   final archivedChatGroupsStreamController = StreamController<List<T>>();
   StreamSink<List<T>> get archivedChatGroupsSink =>

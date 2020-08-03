@@ -1,5 +1,11 @@
 import 'package:equatable/equatable.dart';
 
+enum ConversationState {
+  loading,
+  list,
+  selection,
+}
+
 enum ChatListState {
   loading,
   list,
@@ -7,14 +13,19 @@ enum ChatListState {
   selection,
 }
 
-class Contact {
+class Contact extends Equatable {
   final String id;
   final String username;
   final String photoUrl;
   final DateTime lastOnline;
   final bool isActive;
 
-  Contact({this.id, this.username, this.photoUrl, this.lastOnline, this.isActive});
+  Contact(
+      {this.id, this.username, this.photoUrl, this.lastOnline, this.isActive})
+      : assert(id != null);
+
+  @override
+  List<Object> get props => [this.id];
 }
 
 class ChatGroup extends Equatable {
@@ -40,7 +51,8 @@ class ChatGroup extends Equatable {
       this.date,
       this.seen = false,
       this.groupName})
-      : assert(id != null);
+      : assert(id != null),
+        assert(groupName != null);
 
   ChatGroup copyWith(
       {String id,
@@ -79,44 +91,51 @@ abstract class ChatMessageProps {
   static const String userId = 'userId';
 }
 
-class ChatMessage {
+class ChatMessage extends Equatable {
   final String id;
   final String message;
   final DateTime creationDate;
   final String userId;
   final List<String> mediaUrls;
+  final List<String> reactions;
+  final bool selected;
+  final bool starred;
 
   ChatMessage(
-      {this.mediaUrls, this.id, this.message, this.creationDate, this.userId});
+      {this.reactions,
+      this.selected = false,
+      this.starred = false,
+      this.mediaUrls,
+      this.id,
+      this.message,
+      this.creationDate,
+      this.userId})
+      : assert(id != null),
+        assert(userId != null),
+        assert(message != null);
 
-  Map<String, dynamic> toMap() {
-    return {
-      ChatMessageProps.id: this.id,
-      ChatMessageProps.mediaUrl: this.mediaUrls,
-      ChatMessageProps.message: this.message,
-      ChatMessageProps.creationDate: this.creationDate,
-      ChatMessageProps.userId: this.userId,
-    };
+  ChatMessage copyWith({
+    String id,
+    String message,
+    DateTime creationDate,
+    String userId,
+    List<String> mediaUrls,
+    List<String> reactions,
+    bool selected,
+    bool starred,
+  }) {
+    return ChatMessage(
+      reactions: reactions ?? this.reactions,
+      selected: selected ?? this.selected,
+      starred: starred ?? this.starred,
+      mediaUrls: mediaUrls ?? this.mediaUrls,
+      id: id ?? this.id,
+      message: message ?? this.message,
+      creationDate: creationDate ?? this.creationDate,
+      userId: userId ?? this.userId,
+    );
   }
 
-  // factory ChatMessage.fromDocument(DocumentSnapshot document) {
-  //   return ChatMessage.fromMap(document.data, document.documentID ?? "");
-  // }
-
-  // factory ChatMessage.fromJSON(Map data) {
-  //   String id = data.containsKey(ChatMessageProps.id)
-  //       ? data[ChatMessageProps.id].toString()
-  //       : "";
-  //   return ChatMessage.fromMap(data, id);
-  // }
-
-  // factory ChatMessage.fromMap(dynamic data, String documentID) {
-  //   return ChatMessage(
-  //       id: documentID,
-  //       mediaUrls: Deets.getStrListParam<List<String>>(
-  //           ChatMessageProps.mediaUrl, data, List<String>()),
-  //       message: Deets.getParam<String>(ChatMessageProps.message, data, ""),
-  //       creationDate: Deets.getTimeFromMap(ChatMessageProps.creationDate, data),
-  //       userId: Deets.getParam<String>(ChatMessageProps.userId, data, ""));
-  // }
+  @override
+  List<Object> get props => [this.id];
 }
