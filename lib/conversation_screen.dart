@@ -2,9 +2,12 @@ import 'dart:math';
 
 import 'package:appbar_textfield/appbar_textfield.dart';
 import 'package:bubble/bubble.dart';
+import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'bloc/conversation_bloc.dart';
 import 'bloc/conversation_event.dart';
+import 'emoji_keyboard.dart';
 import 'models.dart';
 
 typedef LoadChatMessagesCallback = Future<List<ChatMessage>> Function();
@@ -21,6 +24,19 @@ class ConversationList extends StatefulWidget {
 
   final Contact contact;
   final Function onNewChatMessage;
+
+  // Any widget to appear above the input area
+  final Widget aboveInputArea;
+  // Any widget to appear below the input area
+  // A typical example is a gif or emoji selection
+  final Widget belowInputArea;
+  // Any widgets to appear after the input textfield
+  // for example a camera button
+  final List<Widget> trailingInputActions;
+  // Any widgets to appear in front of the input textfield
+  // for example an emoji button
+  final List<Widget> leadingInputActions;
+
   ConversationList(
       {Key key,
       this.stateCreator,
@@ -30,7 +46,11 @@ class ConversationList extends StatefulWidget {
       this.contact,
       this.chatMessages = const [],
       this.chatMessagesRef,
-      this.onNewChatMessage})
+      this.onNewChatMessage,
+      this.aboveInputArea,
+      this.belowInputArea,
+      this.trailingInputActions,
+      this.leadingInputActions})
       : super(key: key);
 
   @override
@@ -45,8 +65,16 @@ class ConversationList extends StatefulWidget {
 
 class ConversationListState extends State<ConversationList> {
   ScrollController scrollController = new ScrollController();
+
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
+
   ConversationListLogic bloc;
   GlobalKey<ScaffoldState> _globalKey = new GlobalKey<ScaffoldState>();
+
+  // bool needScroll = true;
+  // bool _showScrollToBottom = true;
 
   static ConversationListState creator() {
     return new ConversationListState();
@@ -68,22 +96,51 @@ class ConversationListState extends State<ConversationList> {
   void scrollControllerListener() {
     if (scrollController.position.atEdge &&
         scrollController.position.pixels > 1) {}
+
+    var distanceFromBottom =
+        scrollController.position.maxScrollExtent - scrollController.offset;
+
+    var halfScreenHeight = MediaQuery.of(context).size.height * 0.5;
+
+    if (distanceFromBottom > halfScreenHeight &&
+        this.bloc.scrollButtonValue != true) {
+      // setState(() {
+      // _showScrollToBottom = true;
+      // });
+      this.bloc.dispatch.add(SetScrollButtonValueEvent(true));
+    } else if (distanceFromBottom < halfScreenHeight &&
+        this.bloc.scrollButtonValue) {
+      // setState(() {
+      //   _showScrollToBottom = false;
+      // });
+
+      this.bloc.dispatch.add(SetScrollButtonValueEvent(false));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (widget.logicCreator == null && bloc == null) {
       bloc = ConversationListLogic();
+
+      this.bloc.visibleChatMessagesStream.listen((_) {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => this.animateScrollToBottom());
+      });
     } else if (bloc == null) {
       bloc = widget.logicCreator();
-    }
 
+      this.bloc.visibleChatMessagesStream.listen((_) {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => this.animateScrollToBottom());
+      });
+    }
     //
     bloc.dispatch
         .add(SetChatMessagesEvent(widget.chatMessages, widget.chatMessagesRef));
 
     return StreamBuilder<ConversationCallbackEvent>(
-        stream: this.bloc.callbackEventControllerStream,
+        stream: this.bloc.callbackEventStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             handleCallbackEvent(snapshot.data);
@@ -123,12 +180,90 @@ class ConversationListState extends State<ConversationList> {
               // resizeToAvoidBottomInset: true,
               key: _globalKey,
               bottomNavigationBar: buildBottomBar(),
-              floatingActionButton: FloatingActionButton(onPressed: () {
-                widget.onNewChatMessage();
-              }),
+              // floatingActionButton: FloatingActionButton(onPressed: () {
+              //   widget.onNewChatMessage();widget.onNewChatMessage();
+              // }),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.endFloat,
+              floatingActionButton: StreamBuilder<bool>(
+                  stream: this.bloc.showScrollBtnStream,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData || snapshot.data == false) {
+                      return Container();
+                    }
+
+                    return Align(
+                      alignment: Alignment(1.05, 1),
+                      // padding: const EdgeInsets.fromLTRB(0, 0, 0, 50),
+                      // child: CircleAvatar(
+                      //   radius: 15,
+                      //   child: IconButton(
+                      //       icon: Icon(Icons.arrow_downward), onPressed: null),
+                      // )
+                      child: Container(
+                        height: 30.0,
+                        width: 30.0,
+                        child: FloatingActionButton(
+                            mini: true,
+                            tooltip: 'Scroll to bottom',
+                            child: Icon(
+                              Icons.arrow_downward,
+                              size: 15,
+                            ),
+                            onPressed: () {
+                              this.requireScrollToBottom();
+                            }),
+                      ),
+                    );
+                  }),
               appBar: buildScaffoldAppBar(snapshot.data),
               body: buildScaffoldBody(snapshot.data));
         });
+  }
+
+  requireScrollToBottom() {
+    this.animateScrollToBottom(force: true);
+  }
+
+  animateScrollToBottom({bool force}) {
+    if (this.bloc.scrollButtonValue && !force) {
+      return;
+    }
+
+    // needScroll = false;
+    Future.delayed(Duration(milliseconds: 0)).then((value) {
+      scrollController
+          .animateTo(
+        scrollController.position.maxScrollExtent,
+        curve: Curves.linear,
+        duration: const Duration(milliseconds: 300),
+      )
+          .then((value) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          curve: Curves.linear,
+          duration: const Duration(milliseconds: 300),
+        );
+      });
+    });
+
+    List<ChatMessage> msgs = widget.chatMessages != null
+        ? widget.chatMessages
+        : widget.chatMessagesRef;
+    if (msgs == null || msgs.length <= 0) {
+      return;
+    }
+
+    itemScrollController.scrollTo(
+        index: msgs.length - 1,
+        duration: Duration(seconds: 2),
+        curve: Curves.easeInOutCubic);
+
+    // _scrollController.animateTo(
+    //   _scrollController.position.maxScrollExtent,
+    //   curve: Curves.easeOut,
+    //   duration: const Duration(milliseconds: 300),
+    // );
   }
 
   buildScaffoldAppBar(ConversationState state) {
@@ -147,6 +282,7 @@ class ConversationListState extends State<ConversationList> {
 
   buildSelectionAppbar() {
     return AppBar(
+      title: Text('1'),
       leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -163,7 +299,7 @@ class ConversationListState extends State<ConversationList> {
 
   Widget buildBottomBar() {
     return StreamBuilder<ChatMessage>(
-        stream: bloc.replyingWithCMControllerStream,
+        stream: bloc.replyingWithChatMsgStream,
         builder: (context, snapshot) {
           return Container(
             // color: Colors.yellow,
@@ -173,109 +309,145 @@ class ConversationListState extends State<ConversationList> {
             // height: 220,
             // decoration:
             // BoxDecoration(border: Border.all(color: Colors.blueAccent)),
-            child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Flexible(
-                    // fit: FlexFit.loose,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.amber,
-                        borderRadius: snapshot.hasData
-                            ? BorderRadius.only(
-                                topRight: const Radius.circular(9.0),
-                                topLeft: const Radius.circular(9.0),
-                                bottomLeft: const Radius.circular(30.0),
-                                bottomRight: const Radius.circular(30.0),
-                              )
-                            : BorderRadius.all(const Radius.circular(30.0)),
-                        //   // borderRadius:
-                        //   // new BorderRadius.all(const Radius.circular(30.0)),
-                        //   // border: Border.all(width: 1.0, color: Colors.lightBlue),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: <Widget>[
-                          snapshot.hasData
-                              ? Padding(
-                                  padding: EdgeInsets.all(5),
-                                  child: getQuote(snapshot.data))
-                              : Container(),
-                          Container(
-                            decoration: BoxDecoration(
-                                color: Colors.amber,
-                                borderRadius: BorderRadius.all(
-                                    const Radius.circular(30.0))
-                                //   // borderRadius:
-                                //   // new BorderRadius.all(const Radius.circular(30.0)),
-                                //   // border: Border.all(width: 1.0, color: Colors.lightBlue),
-                                ),
-                            // width: double.infinity,
-                            // height: 40,
-                            // constraints: BoxConstraints.loose(
-                            // Size(double.infinity, 100)),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              // mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                IconButton(
-                                    icon: Icon(Icons.tag_faces),
-                                    onPressed: null),
-                                Expanded(
-                                  // constraints: BoxConstraints.lerp(
-                                  //     BoxConstraints.loose(Size(50, 30)),
-                                  //     BoxConstraints.loose(Size(100, 100)),
-                                  //     0),
-                                  // height: 35,
-                                  // width: double.infinity,
-                                  child: Container(
-                                    // color: Colors.red,
-                                    child: TextField(
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        contentPadding: EdgeInsets.all(0),
-                                        // contentPadding: EdgeInsets.only(
-                                        //     top:
-                                        //         kdefaultDecorationHeightOffset),
-                                        hintText: 'Type a message..',
-                                      ),
-                                      // scrollPadding: ,
-                                      minLines: 1,
-                                      maxLines: 8,
-                                      expands: false,
-                                      keyboardType: TextInputType.multiline,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                    icon: Icon(Icons.camera), onPressed: null)
-                              ],
-                            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                widget.aboveInputArea ?? Container(),
+                Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Flexible(
+                        // fit: FlexFit.loose,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.amber,
+                            borderRadius: snapshot.hasData
+                                ? BorderRadius.only(
+                                    topRight: const Radius.circular(9.0),
+                                    topLeft: const Radius.circular(9.0),
+                                    bottomLeft: const Radius.circular(30.0),
+                                    bottomRight: const Radius.circular(30.0),
+                                  )
+                                : BorderRadius.all(const Radius.circular(30.0)),
+                            //   // borderRadius:
+                            //   // new BorderRadius.all(const Radius.circular(30.0)),
+                            //   // border: Border.all(width: 1.0, color: Colors.lightBlue),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(3.0, 0, 2.0, 0),
-                      child: CircleAvatar(
-                        child: Icon(
-                          Icons.send,
-                          size: 30,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+                              snapshot.hasData
+                                  ? Padding(
+                                      padding: EdgeInsets.all(5),
+                                      child: getQuote(snapshot.data))
+                                  : Container(),
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.amber,
+                                    borderRadius: BorderRadius.all(
+                                        const Radius.circular(30.0))
+                                    //   // borderRadius:
+                                    //   // new BorderRadius.all(const Radius.circular(30.0)),
+                                    //   // border: Border.all(width: 1.0, color: Colors.lightBlue),
+                                    ),
+                                // width: double.infinity,
+                                // height: 40,
+                                // constraints: BoxConstraints.loose(
+                                // Size(double.infinity, 100)),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  // mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    widget.leadingInputActions != null
+                                        ? [...widget.leadingInputActions]
+                                        : Container(),
+                                    IconButton(
+                                        icon: Icon(Icons.tag_faces),
+                                        onPressed: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EmojiKeyboard()));
+                                        }),
+                                    Expanded(
+                                      // constraints: BoxConstraints.lerp(
+                                      //     BoxConstraints.loose(Size(50, 30)),
+                                      //     BoxConstraints.loose(Size(100, 100)),
+                                      //     0),
+                                      // height: 35,
+                                      // width: double.infinity,
+                                      child: Container(
+                                        // color: Colors.red,
+                                        child: TextField(
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            contentPadding: EdgeInsets.all(0),
+                                            // contentPadding: EdgeInsets.only(
+                                            //     top:
+                                            //         kdefaultDecorationHeightOffset),
+                                            hintText: 'Type a message..',
+                                          ),
+                                          // scrollPadding: ,
+                                          minLines: 1,
+                                          maxLines: 8,
+                                          expands: false,
+                                          keyboardType: TextInputType.multiline,
+                                        ),
+                                      ),
+                                    ),
+                                    widget.trailingInputActions != null
+                                        ? [...widget.trailingInputActions]
+                                        : Container(),
+                                    IconButton(
+                                        icon: Icon(Icons.camera),
+                                        onPressed: null)
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        radius: 24.5,
                       ),
-                    ),
-                  )
-                  // IconButton(
-                  //     iconSize: 45,
-                  //     icon: CircleAvatar(child: Icon(Icons.send)),
-                  //     onPressed: null)
-                ]),
+                      InkWell(
+                        onTap: () {
+                          widget.onNewChatMessage();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(3.0, 0, 2.0, 0),
+                          child: CircleAvatar(
+                            child: Icon(
+                              Icons.send,
+                              size: 30,
+                            ),
+                            radius: 24.5,
+                          ),
+                        ),
+                      )
+                      // IconButton(
+                      //     iconSize: 45,
+                      //     icon: CircleAvatar(child: Icon(Icons.send)),
+                      //     onPressed: null)
+                    ]),
+                Container(
+                  // fit: FlexFit.loose,
+                  child: EmojiPicker(
+                    rows: 5,
+                    columns: 5,
+                    recommendKeywords: ["racing", "horse"],
+                    numRecommended: 1,
+                    onEmojiSelected: (emoji, category) {
+                      print(emoji);
+                    },
+                  ),
+                ),
+                widget.belowInputArea ?? Container(),
+              ],
+            ),
           );
         });
   }
@@ -284,6 +456,10 @@ class ConversationListState extends State<ConversationList> {
     if (chatMessage == null) {
       return Container();
     }
+
+    Widget message = chatMessage.deleted
+        ? getDeletedMessageText(chatMessage)
+        : getMessageText(chatMessage);
 
     return Container(
         // color: Colors.red,
@@ -326,7 +502,7 @@ class ConversationListState extends State<ConversationList> {
                         })
                   ],
                 ),
-                Text(chatMessage?.message ?? ''),
+                message,
               ],
             ),
           ),
@@ -431,55 +607,84 @@ class ConversationListState extends State<ConversationList> {
           }
 
           List<ChatMessage> visibleChats = snapshot.data;
+          // List<ChatMessage> visibleChats = widget.chatMessages;
 
           double pixelRatio = MediaQuery.of(context).devicePixelRatio;
           double px = 1 / pixelRatio;
 
-          BubbleStyle styleMe = BubbleStyle(
-            nip: BubbleNip.no,
-            color: Color.fromARGB(255, 3, 125, 199),
-            elevation: 4 * px,
-            // margin: margin,
-            alignment: Alignment.center,
-          );
+          // BubbleStyle styleMe = BubbleStyle(
+          //   nip: BubbleNip.no,
+          //   color: Color.fromARGB(255, 3, 125, 199),
+          //   elevation: 4 * px,
+          //   // margin: margin,
+          //   alignment: Alignment.center,
+          // );
+
+          // if (!this._showScrollToBottom) {
+          //   // lastMsgCount = chatMessages.length;
+          //   // WidgetsBinding.instance
+          //   //     .addPostFrameCallback((_) => this.animateScrollToBottom());
+          // }
 
           return Stack(
             children: <Widget>[
-              Container(
-                child: Scrollbar(
-                  controller: scrollController,
-                  child: ListView.builder(
-                      controller: scrollController,
-                      padding: EdgeInsets.all(8.0),
-                      itemCount: visibleChats.length,
-                      itemBuilder: (BuildContext context, int i) {
-                        ChatMessage lastChatMsg =
-                            visibleChats.elementAt(max(i - 1, 0));
-                        ChatMessage currentChatMsg = visibleChats.elementAt(i);
-                        ChatMessage nextChatMsg = visibleChats
-                            .elementAt(min(i + 1, visibleChats.length - 1));
+              Scrollbar(
+                controller: scrollController,
+                // child: ScrollablePositionedList.builder(
+                //   itemCount: visibleChats.length  ,
+                //   itemBuilder: (context, i) {
+                //     ChatMessage lastChatMsg =
+                //         visibleChats.elementAt(max(i - 1, 0));
+                //     ChatMessage currentChatMsg = visibleChats.elementAt(i);
+                //     ChatMessage nextChatMsg = visibleChats
+                //         .elementAt(min(i + 1, visibleChats.length - 1));
 
-                        return buildChatTitle(
-                            currentChatMsg, lastChatMsg, nextChatMsg);
-                      }),
-                ),
+                //     return buildChatTitle(
+                //         currentChatMsg, lastChatMsg, nextChatMsg);
+                //   },
+                //   itemScrollController: itemScrollController,
+                //   itemPositionsListener: itemPositionsListener,
+                // )),
+                child: ListView.builder(
+                    controller: scrollController,
+                    padding: EdgeInsets.all(8.0),
+                    itemCount: visibleChats.length,
+                    itemBuilder: (BuildContext context, int i) {
+                      ChatMessage lastChatMsg =
+                          visibleChats.elementAt(max(i - 1, 0));
+                      ChatMessage currentChatMsg = visibleChats.elementAt(i);
+                      ChatMessage nextChatMsg = visibleChats
+                          .elementAt(min(i + 1, visibleChats.length - 1));
+
+                      return buildChatTitle(
+                          currentChatMsg, lastChatMsg, nextChatMsg);
+                    }),
               ),
-              Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                      height: 50,
-                      child: Bubble(
-                          style: styleMe,
-                          child: Container(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(Icons.arrow_downward),
-                                Container(child: Text('Unread'))
-                              ],
-                            ),
-                          )))),
+              // Align(
+              //     alignment: Alignment.bottomCenter,
+              //     child: Container(
+              //         height: 50,
+              //         child: Bubble(
+              //             style: styleMe,
+              //             child: InkWell(
+              //               onTap: () {
+              //                 // floatingActionButton: FloatingActionButton(onPressed: () {
+              //                 widget.onNewChatMessage();
+              //                 widget.onNewChatMessage();
+              //                 // }),
+              //               },
+              //               child: Row(
+              //                 mainAxisSize: MainAxisSize.min,
+              //                 mainAxisAlignment: MainAxisAlignment.center,
+              //                 children: <Widget>[
+              //                   Icon(Icons.arrow_downward),
+              //                   Container(child: Text('Unread'))
+              //                 ],
+              //               ),
+              //             )
+              //             )
+              //             )
+              //             ),
             ],
           );
 
@@ -539,7 +744,20 @@ class ConversationListState extends State<ConversationList> {
     );
   }
 
+  Widget getDeletedMessageText(ChatMessage currentChatMsg) {
+    return Text('User deleted their message',
+        style: TextStyle(fontStyle: FontStyle.italic));
+  }
+
+  Widget getMessageText(ChatMessage currentChatMsg) {
+    return Text(currentChatMsg?.message ?? '');
+  }
+
   getBubbleContent(ChatMessage currentChatMsg, bool showNip, bool owner) {
+    Widget message = currentChatMsg.deleted
+        ? getDeletedMessageText(currentChatMsg)
+        : getMessageText(currentChatMsg);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -547,7 +765,7 @@ class ConversationListState extends State<ConversationList> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-            Expanded(child: Text(currentChatMsg.message)),
+            Expanded(child: message),
             Icon(Icons.done_all, size: 15)
           ],
         ),

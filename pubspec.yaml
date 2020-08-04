@@ -18,6 +18,8 @@ dependencies:
   timeago: ^2.0.26
   bubble: ^1.1.9+1
   faker:
+  emoji_picker: ^0.1.0
+  scrollable_positioned_list: ^0.1.7
 
 
 

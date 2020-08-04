@@ -133,3 +133,8 @@ class DeletedArchivedEvent<T extends ChatMessage> extends ConversationEvent {
 // class ViewArchivedEvent extends ConversationEvent {
 //   ViewArchivedEvent();
 // }
+
+class SetScrollButtonValueEvent extends ConversationEvent {
+  final bool value;
+  SetScrollButtonValueEvent(this.value);
+}

@@ -10,6 +10,7 @@ class ConversationListLogic {
   ConversationState currentState = ConversationState.loading;
   ChatMessage selectedChatMessage;
   ChatMessage repiyingWithChatMessage;
+  bool scrollButtonValue = false;
 
   ConversationListLogic() {
     eventController.stream.listen(handleGotEvent);
@@ -40,6 +41,10 @@ class ConversationListLogic {
     if (event is RemoveReplyWithSelectedEvent) {
       return removeReplyWithSelectedEvent();
     }
+
+    if (event is SetScrollButtonValueEvent) {
+      return setScrollButtonValueEvent(event);
+    }
   }
 
   copySelected(CopySelectedEvent event) {
@@ -49,8 +54,19 @@ class ConversationListLogic {
     });
   }
 
+  final showScrollBtnController = StreamController<bool>();
+  Stream<bool> get showScrollBtnStream => showScrollBtnController.stream;
+  Sink<bool> get showScrollBtnSink {
+    return showScrollBtnController.sink;
+  }
+
+  setScrollButtonValueEvent(SetScrollButtonValueEvent event) {
+    showScrollBtnController.add(event.value);
+    this.scrollButtonValue = event.value;
+  }
+
   final replyingWithCMController = StreamController<ChatMessage>();
-  Stream<ChatMessage> get replyingWithCMControllerStream =>
+  Stream<ChatMessage> get replyingWithChatMsgStream =>
       replyingWithCMController.stream;
   Sink<ChatMessage> get replyingWithCMControllerSink {
     return replyingWithCMController.sink;
@@ -72,7 +88,7 @@ class ConversationListLogic {
   }
 
   final callbackEventController = StreamController<ConversationCallbackEvent>();
-  Stream<ConversationCallbackEvent> get callbackEventControllerStream =>
+  Stream<ConversationCallbackEvent> get callbackEventStream =>
       callbackEventController.stream;
   Sink<ConversationCallbackEvent> get dispatchCallback {
     return callbackEventController.sink;
@@ -138,6 +154,7 @@ class ConversationListLogic {
   }
 
   dispose() {
+    showScrollBtnController.close();
     selectedStreamController.close();
     chatMessagesStreamController.close();
     stateStreamController.close();

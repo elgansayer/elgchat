@@ -16,13 +16,13 @@ Chat Screen
 
 * AppBar Searchable conversation list
 
-* Scrollbar actions
+* Scrollbar actions / scroll to bottom
 
 * Supports selecting messages
 
 * Supports starring messages
 
-* Supports quoting/replyong to messages
+* Supports quoting/replying to messages
 
 * Supports deleting messages
 

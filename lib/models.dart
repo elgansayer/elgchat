@@ -100,11 +100,13 @@ class ChatMessage extends Equatable {
   final List<String> reactions;
   final bool selected;
   final bool starred;
+  final bool deleted;
 
   ChatMessage(
       {this.reactions,
       this.selected = false,
       this.starred = false,
+      this.deleted = false,
       this.mediaUrls,
       this.id,
       this.message,
@@ -123,6 +125,7 @@ class ChatMessage extends Equatable {
     List<String> reactions,
     bool selected,
     bool starred,
+    bool deleted,
   }) {
     return ChatMessage(
       reactions: reactions ?? this.reactions,
@@ -133,6 +136,7 @@ class ChatMessage extends Equatable {
       message: message ?? this.message,
       creationDate: creationDate ?? this.creationDate,
       userId: userId ?? this.userId,
+      deleted: deleted ?? this.deleted,
     );
   }
 
