@@ -1,12 +1,13 @@
 import 'dart:math';
 
 import 'package:appbar_textfield/appbar_textfield.dart';
-import 'package:bubble/bubble.dart';
+// import 'package:bubble/bubble.dart';
 // import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/material.dart';
 // import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'bloc/conversation_bloc.dart';
 import 'bloc/conversation_event.dart';
+import 'bubble.dart';
 import 'emoji_keyboard.dart';
 import 'models.dart';
 
@@ -453,6 +454,15 @@ class ConversationListState extends State<ConversationList> {
         });
   }
 
+  Widget getDeletedMessageText(ChatMessage currentChatMsg) {
+    return Text('User deleted their message',
+        style: TextStyle(fontStyle: FontStyle.italic));
+  }
+
+  Widget getMessageText(ChatMessage currentChatMsg) {
+    return Text(currentChatMsg?.message ?? '');
+  }
+
   getQuote(ChatMessage chatMessage) {
     if (chatMessage == null) {
       return Container();
@@ -590,14 +600,6 @@ class ConversationListState extends State<ConversationList> {
   }
 
   buildChatMessageList() {
-    // return ListView.builder(
-    //   controller: scrollController,
-    //   itemCount: this.widget.chatMessages.length,
-    //   itemBuilder: (context, index) {
-    //     return buildChatMessageTile(this.widget.chatMessages[index]);
-    //   },
-    // );
-
     return StreamBuilder<List<ChatMessage>>(
         stream: this.bloc.visibleChatMessagesStream,
         builder: (context, snapshot) {
@@ -688,20 +690,6 @@ class ConversationListState extends State<ConversationList> {
               //             ),
             ],
           );
-
-          // return Column(
-          //   children: <Widget>[
-          //     Expanded(
-          //       child: ListView.builder(
-          //         controller: scrollController,
-          //         itemCount: visibleChats.length,
-          //         itemBuilder: (context, index) {
-          //           return buildChatMessageTile(visibleChats[index]);
-          //         },
-          //       ),
-          //     ),
-          //   ],
-          // );
         });
   }
 
@@ -720,112 +708,19 @@ class ConversationListState extends State<ConversationList> {
     bool showAvatar = !owner && (!ownsNextMsg || ownsNextMsg && sameNextMsg);
     double radius = 15;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 1, 0, 1),
-      child: Row(children: [
-        showAvatar
-            ? CircleAvatar(
-                child: Text(currentChatMsg.userId.toString()),
-                radius: radius,
-              )
-            : SizedBox(
-                width: radius * 2,
-              ),
-        Expanded(
-          child: InkWell(
-            onLongPress: () {
-              this.bloc.dispatch.add(ToggleSelectedEvent(currentChatMsg));
-            },
-            child: Bubble(
-                style: getStyle(showAvatar, owner, showNip),
-                child: getBubbleContent(currentChatMsg, showNip, owner)),
-          ),
-        ),
-      ]),
-    );
-  }
-
-  Widget getDeletedMessageText(ChatMessage currentChatMsg) {
-    return Text('User deleted their message',
-        style: TextStyle(fontStyle: FontStyle.italic));
-  }
-
-  Widget getMessageText(ChatMessage currentChatMsg) {
-    return Text(currentChatMsg?.message ?? '');
-  }
-
-  getBubbleContent(ChatMessage currentChatMsg, bool showNip, bool owner) {
-    Widget message = currentChatMsg.deleted
-        ? getDeletedMessageText(currentChatMsg)
-        : getMessageText(currentChatMsg);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text("message", style: TextStyle(fontWeight: FontWeight.bold)),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Expanded(child: message),
-            Icon(Icons.done_all, size: 15)
-          ],
-        ),
-      ],
-    );
-
-    // return Text(currentChatMsg.message, style: TextStyle(fontSize: 10));
-  }
-
-  getAlignment(bool owner) {
-    if (owner) {
-      return Alignment.bottomRight;
-    } else {
-      return Alignment.topLeft;
-    }
-  }
-
-  getStyle(bool showAvatar, bool owner, bool ownedLastMsg) {
-    BubbleEdges margin = owner
-        ? BubbleEdges.only(left: 55)
-        : BubbleEdges.only(right: 55, left: !showAvatar ? 0.0 : 0);
-
-    BubbleStyle styleMe = BubbleStyle(
-      nip: getNipStyle(owner, ownedLastMsg),
-      color: Color.fromARGB(255, 225, 255, 199),
-      // elevation: 1 * px,
-
-      margin: margin,
-      alignment: getAlignment(owner),
-    );
-
-    return styleMe;
-  }
-
-  getNipStyle(bool owner, bool ownedLastMsg) {
-    if (owner == true) {
-      return ownedLastMsg ? BubbleNip.rightTop : BubbleNip.no;
-    } else {
-      return ownedLastMsg ? BubbleNip.leftTop : BubbleNip.no;
-    }
-  }
-
-  buildChatMessageTile(ChatMessage chatMessage) {
-    return Container(
-      child: ListTile(
-          onTap: () {
-            this.bloc.dispatch.add(ToggleSelectedEvent(chatMessage));
-          },
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  chatMessage.message,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          )),
+    return ConvosationBubble(
+      chatMessage: currentChatMsg,
+      owner: owner,
+      radius: radius,
+      showAvatar: showAvatar,
+      showNip: showNip,
+      onGotReaction: (String code) {
+        this.bloc.dispatch.add(ToggleReactedEvent(
+            chatMessage: currentChatMsg, uCode: code, contact: widget.contact));
+      },
+      onLongPress: () {
+        this.bloc.dispatch.add(ToggleSelectedEvent(currentChatMsg));
+      },
     );
   }
 }

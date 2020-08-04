@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../models.dart';
 
 abstract class ConversationCallbackEvent {}
@@ -54,6 +56,16 @@ abstract class ConversationEvent {}
 class ToggleSelectedEvent extends ConversationEvent {
   final ChatMessage chatMessage;
   ToggleSelectedEvent(this.chatMessage);
+}
+
+class ToggleReactedEvent extends ConversationEvent {
+  final ChatMessage chatMessage;
+  final String uCode;
+  final Contact contact;
+  ToggleReactedEvent(
+      {@required this.chatMessage,
+      @required this.uCode,
+      @required this.contact});
 }
 
 class SetSearchString extends ConversationEvent {

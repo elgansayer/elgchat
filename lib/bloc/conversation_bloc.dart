@@ -45,6 +45,28 @@ class ConversationListLogic {
     if (event is SetScrollButtonValueEvent) {
       return setScrollButtonValueEvent(event);
     }
+
+    if (event is ToggleReactedEvent) {
+      return toggleReactedEvent(event);
+    }
+  }
+
+  toggleReactedEvent(ToggleReactedEvent event) {
+    var reactions = event.chatMessage.reactions ?? [];
+    if (reactions.contains(event.uCode)) {
+      reactions.removeWhere((String uc) => uc.compareTo(event.uCode) == 0);
+    } else {
+      reactions.add(event.uCode);
+    }
+
+    ChatMessage newChatMessage =
+        event.chatMessage.copyWith(reactions: reactions);
+
+    var index = this.chatMessages.indexOf(event.chatMessage);
+
+    this.chatMessages.replaceRange(index, index + 1, [newChatMessage]);
+
+    chatMessagesStreamController.add(this.chatMessages);
   }
 
   copySelected(CopySelectedEvent event) {
