@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:appbar_textfield/appbar_textfield.dart';
 import 'package:bubble/bubble.dart';
-import 'package:emoji_picker/emoji_picker.dart';
+// import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+// import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'bloc/conversation_bloc.dart';
 import 'bloc/conversation_event.dart';
 import 'emoji_keyboard.dart';
@@ -66,9 +66,9 @@ class ConversationList extends StatefulWidget {
 class ConversationListState extends State<ConversationList> {
   ScrollController scrollController = new ScrollController();
 
-  final ItemScrollController itemScrollController = ItemScrollController();
-  final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
+  // final ItemScrollController itemScrollController = ItemScrollController();
+  // final ItemPositionsListener itemPositionsListener =
+  //     ItemPositionsListener.create();
 
   ConversationListLogic bloc;
   GlobalKey<ScaffoldState> _globalKey = new GlobalKey<ScaffoldState>();
@@ -254,10 +254,10 @@ class ConversationListState extends State<ConversationList> {
       return;
     }
 
-    itemScrollController.scrollTo(
-        index: msgs.length - 1,
-        duration: Duration(seconds: 2),
-        curve: Curves.easeInOutCubic);
+    // itemScrollController.scrollTo(
+    //     index: msgs.length - 1,
+    //     duration: Duration(seconds: 2),
+    //     curve: Curves.easeInOutCubic);
 
     // _scrollController.animateTo(
     //   _scrollController.position.maxScrollExtent,
@@ -310,8 +310,9 @@ class ConversationListState extends State<ConversationList> {
             // decoration:
             // BoxDecoration(border: Border.all(color: Colors.blueAccent)),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              // crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 widget.aboveInputArea ?? Container(),
                 Row(
@@ -433,18 +434,18 @@ class ConversationListState extends State<ConversationList> {
                       //     icon: CircleAvatar(child: Icon(Icons.send)),
                       //     onPressed: null)
                     ]),
-                Container(
-                  // fit: FlexFit.loose,
-                  child: EmojiPicker(
-                    rows: 5,
-                    columns: 5,
-                    recommendKeywords: ["racing", "horse"],
-                    numRecommended: 1,
-                    onEmojiSelected: (emoji, category) {
-                      print(emoji);
-                    },
-                  ),
-                ),
+                // Container(
+                //   // fit: FlexFit.loose,
+                //   child: EmojiPicker(
+                //     rows: 5,
+                //     columns: 5,
+                //     recommendKeywords: ["racing", "horse"],
+                //     numRecommended: 1,
+                //     onEmojiSelected: (emoji, category) {
+                //       print(emoji);
+                //     },
+                //   ),
+                // ),
                 widget.belowInputArea ?? Container(),
               ],
             ),
@@ -609,8 +610,8 @@ class ConversationListState extends State<ConversationList> {
           List<ChatMessage> visibleChats = snapshot.data;
           // List<ChatMessage> visibleChats = widget.chatMessages;
 
-          double pixelRatio = MediaQuery.of(context).devicePixelRatio;
-          double px = 1 / pixelRatio;
+          // double pixelRatio = MediaQuery.of(context).devicePixelRatio;
+          // double px = 1 / pixelRatio;
 
           // BubbleStyle styleMe = BubbleStyle(
           //   nip: BubbleNip.no,
