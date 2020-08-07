@@ -50,7 +50,8 @@ class ArchiveSelectedEvent extends ChatListEvent {
 }
 
 class MarkSelectedUnreadEvent extends ChatListEvent {
-  MarkSelectedUnreadEvent();
+final String userid;
+  MarkSelectedUnreadEvent({this.userid});
 }
 
 class PinSelectedEvent extends ChatListEvent {

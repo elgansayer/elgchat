@@ -11,3 +11,11 @@ class SwitchTab extends HomeEvent {
   @override
   List<Object> get props =>[index];
 }
+
+class ChangeHomePageMessagesIcon extends HomeEvent {
+  final bool showBadge;
+  ChangeHomePageMessagesIcon(this.showBadge);
+
+  @override
+  List<Object> get props => throw UnimplementedError();
+}

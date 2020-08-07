@@ -86,7 +86,7 @@ class ChatGroupListLogic<T extends ChatGroup> {
     }
 
     if (event is MarkSelectedUnreadEvent) {
-      return markSelectedUnreadEvent();
+      return markSelectedUnreadEvent(event);
     }
 
     if (event is PinSelectedEvent) {
@@ -150,7 +150,7 @@ class ChatGroupListLogic<T extends ChatGroup> {
   setSearchString(SetSearchString event) {
     List<T> chatGroups = this
         .chatGroups
-        .where((cg) => cg.groupName.toLowerCase().contains(event.phrase))
+        .where((cg) => cg.name.toLowerCase().contains(event.phrase))
         .toList();
 
     chatGroupsStreamController.add(chatGroups);
@@ -201,13 +201,16 @@ class ChatGroupListLogic<T extends ChatGroup> {
     stateStreamController.add(ChatListState.list);
   }
 
-  markSelectedUnreadEvent() {
+  markSelectedUnreadEvent(MarkSelectedUnreadEvent event) {
     List<T> allSelected = chatGroups.selected();
     chatGroups = chatGroups.map((T cg) {
       bool selected = allSelected.contains(cg);
+
       if (selected) {
-        return cg.copyWith(seen: false);
+        List<String> seenIds = cg.seenBy;
+        return cg.copyWith(seenBy: [...seenIds, event.userid]);
       }
+
       return cg;
     }).toList();
 

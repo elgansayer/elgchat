@@ -1,9 +1,11 @@
-import 'package:elgchat/bloc/chat_list_bloc.dart';
 import 'package:elgchat/elgchat.dart';
 import 'package:elgchat_example/conversation/conversation_screen.dart';
-import 'package:faker/faker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../user_repository.dart';
+import 'bloc/messages_bloc.dart';
 
 class ChatListPage extends StatefulWidget {
   ChatListPage({Key key}) : super(key: key);
@@ -13,40 +15,65 @@ class ChatListPage extends StatefulWidget {
 }
 
 class _ChatListPageState extends State<ChatListPage> {
-  int numItmes = 11;
-  List<ChatGroup> chatGroups = new List<ChatGroup>();
-
-  // ChatListPage({Key key}) : super(key: key);
+  // int numItmes = 11;
 
   @override
   Widget build(BuildContext context) {
-    return ChatGroupList<ChatGroup, ChatGroupListLogic>(
-        floatingActionBar: FloatingActionButton(onPressed: () {
-          setState(() {
-            chatGroups.add(ChatGroup(
-              id: faker.guid.guid(),
-              groupName: faker.internet.userName(),
-              // contacts: allContacts.sublist(0, randomInt),
-              lastMessage: faker.lorem.sentence(),
-              date: faker.date.dateTime(),
-              seen: faker.randomGenerator.boolean(),
-            ));
-          });
-        }),
-        onTap: (ChatGroup chatGroup) => onChatGroupTap(context, chatGroup),
-        chatGroupsRef: chatGroups,
-        // onLoadChatGroups: onLoadChatGroups,
-        // onLoadMoreChatGroups: onLoadMoreChatGroups,
-        stateCreator: () => MyChatScreenState(),
-        trailingActions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => onFindUserToChatTo(context),
-          )
-        ]);
+    return BlocBuilder<ChatGroupsBloc, ChatGroupsState>(
+        builder: (BuildContext context, ChatGroupsState state) {
+      if (state is LoadedChatGroups) {
+        return _buildList(state);
+      }
+
+      return _buildLoading();
+    });
   }
 
-  void onChatGroupTap(BuildContext context, ChatGroup chatGroup) {
+  _buildLoading() {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Chat List'),
+        ),
+        body: Center(child: CircularProgressIndicator()));
+  }
+
+  _buildList(LoadedChatGroups state) {
+    final Contact contact = _getContact();
+
+    // Load groups from state and use ref
+    List<ChatGroup> chatGroups = state.chatGroups;
+
+    //import 'package:elgchat/bloc/chat_list_bloc.dart';
+    return ChatGroupList(
+      // floatingActionBar: FloatingActionButton(onPressed: () {
+      //   // setState(() {BuildContext, ChatGroupsState
+      //   //   var id = faker.guid.guid();
+      //   //   chatGroups.add(ChatGroup(
+      //   //     id: id,
+      //   //     name: faker.internet.userName(),
+      //   //     // contacts: allContacts.sublist(0, randomInt),
+      //   //     lastMessage: faker.lorem.sentence(),
+      //   //     created: faker.date.dateTime(),
+      //   //     seenBy: [id],
+      //   //   ));
+      //   // });
+      // }),
+      onTap: (ChatGroup chatGroup) => _onChatGroupTap(context, chatGroup),
+      chatGroupsRef: chatGroups,
+      // onLoadChatGroups: onLoadChatGroups,
+      // onLoadMoreChatGroups: onLoadMoreChatGroups,
+      stateCreator: () => MyChatScreenState(),
+      trailingActions: [
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () => _onFindUserToChatTo(context),
+        )
+      ],
+      user: contact,
+    );
+  }
+
+  void _onChatGroupTap(BuildContext context, ChatGroup chatGroup) {
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -54,20 +81,20 @@ class _ChatListPageState extends State<ChatListPage> {
                 ConversationViewScreen(chatGroup: chatGroup)));
   }
 
-  Future<List<ChatGroup>> onLoadChatGroups() async {
-    var allChatGroups = List.generate(numItmes, (i) {
-      return ChatGroup(
-        id: i.toString(),
-        groupName: faker.internet.userName(),
-        // contacts: allContacts.sublist(0, randomInt),
-        lastMessage: faker.lorem.sentence(),
-        date: faker.date.dateTime(),
-        seen: faker.randomGenerator.boolean(),
-      );
-    });
+  // Future<List<ChatGroup>> onLoadChatGroups() async {
+  //   var allChatGroups = List.generate(numItmes, (i) {
+  //     return ChatGroup(
+  //       id: i.toString(),
+  //       name: faker.internet.userName(),
+  //       // contacts: allContacts.sublist(0, randomInt),
+  //       lastMessage: faker.lorem.sentence(),
+  //       created: faker.date.dateTime(),
+  //       seenBy: [i.toString()],
+  //     );
+  //   });
 
-    return allChatGroups;
-  }
+  //   return allChatGroups;
+  // }
 
   // Future<List<ChatGroup>> onLoadMoreChatGroups() async {
   //   var allChatGroups = List.generate(numItmes, (i) {
@@ -85,9 +112,17 @@ class _ChatListPageState extends State<ChatListPage> {
   //   return allChatGroups;
   // }
 
-  onFindUserToChatTo(BuildContext context) async {
+  _onFindUserToChatTo(BuildContext context) async {
     // Contact contactSelected = await Navigator.push(
-        // context, MaterialPageRoute(builder: (context) => FindUserScreen()));
+    // context, MaterialPageRoute(builder: (context) => FindUserScreen()));
+  }
+
+  Contact _getContact() {
+    UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
+    final FirebaseUser user = userRepository.user;
+    // Create n ElgCHat Contact from our firebase user
+    return Contact(id: user.uid, photoUrl: user.photoUrl);
   }
 }
 // class ChatListPage extends StatelessWidget {

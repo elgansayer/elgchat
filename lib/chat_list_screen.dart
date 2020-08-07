@@ -56,8 +56,12 @@ class ChatGroupList<T extends ChatGroup, L extends ChatGroupListLogic<T>>
   // Non-mutated list
   final List<T> chatGroups;
 
+  // App Owner
+  final Contact user;
+
   ChatGroupList(
       {Key key,
+      @required this.user,
       this.stateCreator,
       this.logicCreator,
       // this.onLoadChatGroups,
@@ -79,9 +83,8 @@ class ChatGroupList<T extends ChatGroup, L extends ChatGroupListLogic<T>>
       this.chatGroupsRef,
       this.chatGroups,
       this.floatingActionBar})
-      : super(key: key) {
-    //  List<ChatGroup> chatGroups = await widget.onLoadChatGroups();
-  }
+      : assert(user != null),
+        super(key: key);
 
   @override
   ChatGroupListState createState() {
@@ -350,6 +353,7 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
                 onUserSearch: (String value) {
                   return [
                     Contact(
+                      id: '1',
                       username: 'nodnol',
                       photoUrl: 'nodnol',
                       lastOnline: DateTime.now(),
@@ -456,6 +460,7 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
                               return widget.onLoadListAtEnd();
                             }
                           },
+                          user: widget.user,
                         )),
               );
             },
@@ -475,7 +480,7 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
           children: [
             Expanded(
               child: Text(
-                chatGroup.groupName,
+                chatGroup.name,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -493,7 +498,9 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
             ),
             chatGroup.pinned ? buildPinned(chatGroup) : Container(),
             chatGroup.muted ? buildMuted(chatGroup) : Container(),
-            chatGroup.seen != true ? buildNotSeen(chatGroup) : Container()
+            chatGroup.seen(widget.user.id) != true
+                ? buildNotSeen(chatGroup)
+                : Container()
           ],
         ),
       ),
@@ -501,7 +508,7 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
   }
 
   Widget buildDateTime(T chatGroup) {
-    DateTime dateTime = chatGroup.date.toUtc();
+    DateTime dateTime = chatGroup.created.toUtc();
     String dateString = formatDateString(dateTime);
     return Text(dateString, style: TextStyle(color: Colors.grey));
   }
@@ -534,9 +541,9 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
 
   buildChatGroupAvatar(T chatGroup) {
     Widget avatar = CircleAvatar(
-      child: chatGroup.avatarUrl != null
+      child: chatGroup.imageUrl != null
           ? CachedNetworkImage(
-              imageUrl: chatGroup.avatarUrl,
+              imageUrl: chatGroup.imageUrl,
               placeholder: (context, url) => CircularProgressIndicator(),
               errorWidget: (context, url, error) => Icon(Icons.error),
             )

@@ -1,19 +1,44 @@
 import 'package:elgchat_example/profile/bloc/profile_bloc.dart';
 import 'package:elgchat_example/profile/profile_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../user_repository.dart';
 import 'bloc/home_bloc.dart';
-import 'chat_list_screen.dart';
+import 'bloc/messages_bloc.dart';
+import 'chat_list_page.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   HomeScreen({Key key}) : super(key: key);
 
   @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final HomeBloc _homeBloc = HomeBloc();
+  final ChatGroupsRepository _chatGroupsRepository = ChatGroupsRepository();
+
+  @override
+  void dispose() {
+    _homeBloc.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
+
+    final FirebaseUser user = userRepository.user;
+
     return MultiBlocProvider(providers: [
+      BlocProvider<ChatGroupsBloc>(
+          create: (context) => ChatGroupsBloc(_chatGroupsRepository, _homeBloc)
+            ..add(LoadChatGroups(userId: user.uid))),
       BlocProvider<ProfileBloc>(create: (context) => ProfileBloc()),
-      BlocProvider<HomeBloc>(create: (context) => HomeBloc())
+      BlocProvider<HomeBloc>(create: (context) => _homeBloc)
     ], child: HomeForm());
   }
 }

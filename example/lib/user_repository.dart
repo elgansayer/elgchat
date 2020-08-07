@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 class UserRepository {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  FirebaseUser _user;
 
   UserRepository({FirebaseAuth firebaseAuth, GoogleSignIn googleSignin})
       : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
@@ -48,7 +49,12 @@ class UserRepository {
     return currentUser != null;
   }
 
-  Future<FirebaseUser> getUser() {
-    return _firebaseAuth.currentUser();
+  FirebaseUser get user {
+    return _user;
+  }
+
+  Future<FirebaseUser> getUser() async {
+    _user = await _firebaseAuth.currentUser();
+    return _user;
   }
 }

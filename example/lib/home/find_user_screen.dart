@@ -21,6 +21,7 @@ class _FindUserScreenState extends State<FindUserScreen> {
         setState(() {
           contacts = [
             Contact(
+              id: '1',
               username: 'nodnol',
               photoUrl: 'nodnol',
               lastOnline: DateTime.now(),
