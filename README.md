@@ -14,15 +14,7 @@
 ## Project status
 Active development for an app. No release version yet.
 
-![ElgChat](https://github.com/elgansayer/elgchat/blob/master/screenshots/Screenshot_1596406881.png)
-
-![ElgChat](https://github.com/elgansayer/elgchat/blob/master/screenshots/Screenshot_1596499399.png)
-
-![ElgChat](https://github.com/elgansayer/elgchat/blob/master/screenshots/Screenshot_1596814618.png)
-
 ![ElgChat](https://github.com/elgansayer/elgchat/blob/master/screenshots/Screenshot_1596814621.png)
-
-![ElgChat](https://github.com/elgansayer/elgchat/blob/master/screenshots/Screenshot_1596814629.png)
 
 ![ElgChat](https://github.com/elgansayer/elgchat/blob/master/screenshots/Screenshot_1596814633.png)
 
