@@ -11,6 +11,9 @@
   </p>
 </p>
 
+## Project status
+Active development for an app. No release version yet.
+
 ## Table of contents
 
 - [Quick start](#quick-start)
@@ -19,6 +22,7 @@
 - [Firebase Functions Example](#firebase-functions-example)
 - [Other Examples](#other-examples)
 - [Features](#features)
+- [Roadmap](#roadmap)
 - [Creators](#authors)
 - [Copyright and license](#license)
 
@@ -101,6 +105,13 @@ Now in your Dart code, you can use:
 
 ```import 'elgchat/elgchat.dart';```
 
+## Roadmap
+* Cache system
+* Add notifications system
+* Provide an API in NodeJs/Go
+* Full DevOps
+* More and customisable animations
+* Complete example with firebase
 
 ## Versioning
 
@@ -120,4 +131,10 @@ x Complete example with firebase
 x Conversation groups tested
 x More animations
 
-## Acknowledgments
+## Acknowledgments and Dependancies
+* **fluttercommunity.dev** equatable: ^1.2.3
+* **baseflow.com** cached_network_image: ^2.2.0+1
+* **elgansayer** appbar_textfield: ^1.0.1+1
+* **dart.dev** intl: ^0.16.1
+* **a.araujo.azua@gmail.com** timeago: ^2.0.26
+* **victor.dunaev@gmail.com** bubble: ^1.1.9+1
