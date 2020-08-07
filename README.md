@@ -87,27 +87,28 @@ This screen is meant for starting a new chat and simply provides a search callba
 * Callbacks on list actions
 * Split logic class without using dependencies
 
-## QUick Start
+## Quick Start
 
+**NOTE:** This will not work until a package is deployd. There is currently no version deployed as this 1.0.0 still being actively developed.
 
-1. Depend on it
-Add this to your package's pubspec.yaml file:
+~~1. Depend on it~~
+~~Add this to your package's pubspec.yaml file:~~
 
 ```dependencies:
   elgchat: ^1.0.0
 ```
 
-2. Install it
-You can install packages from the command line:
+~~2. Install it~~
+~~You can install packages from the command line:~~
 
-with Flutter:
+~~with Flutter:~~
 
 ```$ flutter pub get```
 
-Alternatively, your editor might support flutter pub get. Check the docs for your editor to learn more.
+~~Alternatively, your editor might support flutter pub get. Check the docs for your editor to learn more.~~
 
-3. Import it
-Now in your Dart code, you can use:
+~~3. Import it~~
+~~Now in your Dart code, you can use:~~
 
 ```import 'elgchat/elgchat.dart';```
 
@@ -131,11 +132,6 @@ See also the list of [contributors](https://github.com/elgansayer/elgchat/contri
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-* Feature aims
-x Complete example with firebase
-x Conversation groups tested
-x More animations
 
 ## Acknowledgments and Dependancies
 * **fluttercommunity.dev** equatable: ^1.2.3
