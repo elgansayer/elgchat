@@ -1,230 +1,125 @@
-import 'dart:ui';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:timeago/timeago.dart' as timeago;
-import 'package:intl/intl.dart';
+import 'dart:async';
+
 import 'package:appbar_textfield/appbar_textfield.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:elgchat/chatgroup_tile.dart';
 import 'package:flutter/material.dart';
-import 'archived_chat_list_bloc.dart';
-import 'archived_chat_list_state.dart';
-import 'bloc/chat_list_callback_events.dart';
 import 'bloc/chat_list_events.dart';
-import 'bloc/chat_list_bloc.dart';
 import 'models.dart';
-import 'user_search_screen.dart';
+import 'selection_app_bar.dart';
 
-typedef LoadChatGroupsCallback<T extends ChatGroup> = Future<List<T>>
-    Function();
-typedef LoadMoreChatGroupsCallback<T extends ChatGroup> = Future<List<T>>
-    Function();
+extension selectedExtension on List<ChatGroup> {
+  // List<ChatGroup> selected() {
+  //   return this.where((element) => element.selected).toList();
+  // }
 
-class ChatGroupList<T extends ChatGroup, L extends ChatGroupListLogic<T>>
-    extends StatefulWidget {
-  // State of the widgets view
-  // final LoadChatGroupsCallback onLoadChatGroups;
-  // final LoadMoreChatGroupsCallback onLoadMoreChatGroups;
+  List<ChatGroup> pinned() {
+    return this.where((element) => element.pinned).toList();
+  }
+
+  List<ChatGroup> archivedIs(bool value) {
+    return this.where((element) => element.archived == value).toList();
+  }
+}
+
+class ChatGroupList extends StatefulWidget {
   final VoidCallback onLoadListAtEnd;
-
-  final LoadMoreChatGroupsCallback onLoadMoreArchivedChatGroups;
+  // final LoadMoreChatGroupsCallback onLoadMoreArchivedChatGroups;
   final String title;
-
   final ChatGroupListState Function() stateCreator;
-  final ChatGroupListLogic Function() logicCreator;
-  final ArchivedChatListScreenLogic Function() archiveLogicCreator;
-  final ArchivedChatGroupListState Function() archiveStateCreator;
-
-  // Fired when chat groups are unarchived
-  final void Function(List<T> chatGroups) onUnarchived;
-  // Fired when chat groups are deleted
-  final void Function(List<T> chatGroups) onDeleted;
-  // Fired when chat groups are archived
-  final void Function(List<T> chatGroups) onArchived;
-  // Fired when chat groups are marked seen
-  final void Function(List<T> chatGroups) onMarkedSeen;
-  // Fired when chat groups are pinned
-  final void Function(List<T> chatGroups) onTogglePinned;
-  // Fired when chat groups are muted
-  final void Function(List<T> chatGroups) onToggleMuted;
-  final void Function(T chatGroup) onSelected;
-  final void Function(T chatGroup) onTap;
+  // final ChatGroupListLogic Function() logicCreator;
+  // final ArchivedChatListScreenLogic Function() archiveLogicCreator;
+  // final ArchivedChatGroupListState Function() archiveStateCreator;
+  final void Function(List<ChatGroup> chatGroups) onUnarchived;
+  final void Function(List<ChatGroup> chatGroups) onDeleted;
+  final void Function(List<ChatGroup> chatGroups) onArchived;
+  final void Function(List<ChatGroup> chatGroups) onMarkedUnread;
+  final void Function(List<ChatGroup> chatGroups) onTogglePinned;
+  final void Function(List<ChatGroup> chatGroups) onToggleMuted;
+  final void Function(ChatGroup chatGroup) onSelected;
+  final void Function(ChatGroup chatGroup) onTap;
+  final void Function(ChatGroup chatGroup) onLongPress;
 
   final List<Widget> trailingActions;
   final List<Widget> leadingActions;
   final Widget floatingActionBar;
-
-  // A reference to a mutatable list
-  final List<T> chatGroupsRef;
-  // Non-mutated list
-  final List<T> chatGroups;
-
-  // App Owner
+  // final List<T> chatGroupsRef;
+  final List<ChatGroup> chatGroups;
   final Contact user;
 
   ChatGroupList(
       {Key key,
       @required this.user,
       this.stateCreator,
-      this.logicCreator,
-      // this.onLoadChatGroups,
+      // this.logicCreator,
       this.onLoadListAtEnd,
       this.title = 'Chat list',
-      this.archiveLogicCreator,
-      this.archiveStateCreator,
+      // this.archiveLogicCreator,
+      // this.archiveStateCreator,
       this.onUnarchived,
       this.onDeleted,
       this.onArchived,
-      this.onMarkedSeen,
+      this.onMarkedUnread,
       this.onTogglePinned,
       this.onToggleMuted,
-      this.onLoadMoreArchivedChatGroups,
+      // this.onLoadMoreArchivedChatGroups,
       this.trailingActions,
       this.leadingActions,
       this.onSelected,
       this.onTap,
-      this.chatGroupsRef,
+      // this.chatGroupsRef,
       this.chatGroups,
-      this.floatingActionBar})
+      this.floatingActionBar,
+      this.onLongPress})
       : assert(user != null),
         super(key: key);
 
   @override
-  ChatGroupListState createState() {
-    if (stateCreator == null) {
-      return ChatGroupListState<T, L>();
-    } else {
-      return this.stateCreator();
-    }
-  }
+  ChatGroupListState createState() => ChatGroupListState();
 }
 
-class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
-    extends State<ChatGroupList> {
-  // The controller for the list view
+class ChatGroupListState extends State<ChatGroupList> {
+  final ChatGroupListLogic logic = new ChatGroupListLogic();
   ScrollController scrollController = new ScrollController();
-  ChatGroupListLogic<ChatGroup> bloc;
-
-  static ChatGroupListState creator() {
-    return new ChatGroupListState();
-  }
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    this.bloc.dispose();
-    super.dispose();
-  }
-
   @override
   void initState() {
     super.initState();
-    scrollController.addListener(scrollControllerListener);
-
-    // Load first chat groups
-    // this.initLoadChatGroups();
-  }
-
-  // void initLoadChatGroups() async {
-  //   List<ChatGroup> chatGroups = await widget.onLoadChatGroups();
-  //   bloc.dispatch.add(SetChatGroupsEvent(chatGroups));
-  // }
-
-  void loadMoreChatGroups() async {
-    //
-    if (widget.onLoadListAtEnd != null) {
-      widget.onLoadListAtEnd();
-    }
-
-    // this.bloc.dispatch.add(AddChatGroupsEvent(chatGroups));
-  }
-
-  void scrollControllerListener() {
-    if (scrollController.position.atEdge &&
-        scrollController.position.pixels > 1) {
-      this.loadMoreChatGroups();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.logicCreator == null && bloc == null) {
-      bloc = ChatGroupListLogic();
-    } else if (bloc == null) {
-      bloc = widget.logicCreator();
-    }
+    // logic.chatGroups = widget.chatGroups;
 
-    //
-    bloc.dispatch
-        .add(SetChatGroupsEvent(widget.chatGroups, widget.chatGroupsRef));
-
-    return StreamBuilder<ChatListCallbackEvent>(
-        stream: this.bloc.callbackEventControllerStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            handleCallbackEvent(snapshot.data);
-          }
-          return buildScaffold();
-        });
-  }
-
-  handleCallbackEvent(ChatListCallbackEvent event) {
-    if (event is UnarchivedCallbackEvent) {
-      if (widget.onUnarchived == null) {
-        return;
-      }
-      widget.onUnarchived(event.chatGroups);
-    }
-
-    if (event is DeletedCallbackEvent) {
-      if (widget.onDeleted == null) {
-        return;
-      }
-      widget.onDeleted(event.chatGroups);
-    }
-
-    if (event is ToggleMutedCallbackEvent) {
-      if (widget.onToggleMuted == null) {
-        return;
-      }
-      widget.onToggleMuted(event.chatGroups);
-    }
-
-    if (event is TogglePinnedCallbackEvent) {
-      if (widget.onTogglePinned == null) {
-        return;
-      }
-      widget.onTogglePinned(event.chatGroups);
-    }
-
-    if (event is MarkedSeenCallbackEvent) {
-      if (widget.onMarkedSeen == null) {
-        return;
-      }
-      widget.onMarkedSeen(event.chatGroups);
-    }
-
-    if (event is ArchivedCallbackEvent) {
-      if (widget.onArchived == null) {
-        return;
-      }
-      widget.onArchived(event.chatGroups);
-    }
-  }
-
-  buildScaffold() {
     return StreamBuilder<ChatListState>(
-        stream: this.bloc.stateStream,
-        builder: (context, snapshot) {
-          return Scaffold(
-              floatingActionButton: widget.floatingActionBar,
-              appBar: buildScaffoldAppBar(snapshot.data),
-              body: buildScaffoldBody(snapshot.data));
-        });
+      stream: this.logic.stateStream,
+      builder: (context, snapshot) {
+        return Scaffold(
+            floatingActionButton: widget.floatingActionBar,
+            appBar: buildScaffoldAppBar(snapshot.data),
+            body: buildScaffoldBody(snapshot.data));
+      },
+      initialData: ChatListState.list,
+    );
+  }
+
+  buildListAppBar() {
+    return AppBarTextField(
+      title: Text(widget.title),
+      onChanged: (String phrase) {
+        this.logic.dispatch.add(SetSearchString(phrase));
+      },
+      onBackPressed: () {
+        this.logic.dispatch.add(ClearSearchString());
+      },
+      onClearPressed: () {
+        this.logic.dispatch.add(ClearSearchString());
+      },
+      leadingActionButtons: widget.leadingActions,
+      trailingActionButtons: widget.trailingActions,
+    );
   }
 
   buildScaffoldAppBar(ChatListState state) {
-    if (state == null) {
-      return AppBar(title: Text(widget.title));
-    }
-
     if (state != ChatListState.selection) {
       return buildListAppBar();
     }
@@ -233,143 +128,57 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
   }
 
   buildSelectionAppbar() {
-    return AppBar(
-      leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            this.bloc.dispatch.add(SetStateEvent(ChatListState.list));
-          }),
-      title: StreamBuilder<List<T>>(
-          stream: this.bloc.selectedChatGroupsStream,
-          builder: (context, snapshot) {
-            String selectedCount =
-                snapshot.hasData ? snapshot.data.length.toString() : '1';
-            return Text(selectedCount);
-          }),
-      actions: <Widget>[
-        pinButton(),
-        deleteButton(),
-        muteToggleButton(),
-        archiveButton(),
-        markUnreadButton(),
-        moreMenuButton()
-      ],
-    );
-  }
-
-  pinButton() {
-    return Tooltip(
-        message: 'Pin Toggle',
-        child:
-            IconButton(icon: Icon(Icons.person_pin), onPressed: pinSelected));
-  }
-
-  deleteButton() {
-    return Tooltip(
-        message: 'Delete',
-        child: IconButton(icon: Icon(Icons.delete), onPressed: deleteSelected));
-  }
-
-  muteToggleButton() {
-    return Tooltip(
-        message: 'Mute Toggle',
-        child:
-            IconButton(icon: Icon(Icons.volume_mute), onPressed: muteSelected));
-  }
-
-  archiveButton() {
-    return Tooltip(
-        message: 'Archive',
-        child:
-            IconButton(icon: Icon(Icons.archive), onPressed: archiveSelected));
-  }
-
-  markUnreadButton() {
-    return Tooltip(
-        message: 'Mark Unread',
-        child: IconButton(
-            icon: Icon(Icons.markunread), onPressed: markSelectedUnread));
-  }
-
-  moreMenuButton() {
-    return PopupMenuButton<String>(
-      onSelected: (String value) {
+    return SelectionAppBar(
+      initialData: this.logic.selectedChatGroupIds,
+      chatGroups: widget.chatGroups,
+      onBackPressed: () {
+        this.logic.dispatch.add(SetStateEvent(ChatListState.list));
+      },
+      selectedStream: this.logic.selectedChatGroupsStream,
+      popUpMenuSelected: (String value, List<ChatGroup> selected) {
         if (value == 'SelectAll') {
-          this.bloc.dispatch.add(SelectAllEvent());
+          this.logic.dispatch.add(SelectAllEvent());
         }
       },
-      child: Tooltip(message: 'More', child: Icon(Icons.more_vert)),
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        const PopupMenuItem<String>(
-          value: 'SelectAll',
-          child: Text('Select All'),
-        ),
-      ],
-    );
-  }
-
-  buildListAppBar() {
-    return AppBarTextField(
-      title: Text(widget.title),
-      onChanged: (String phrase) {
-        this.bloc.dispatch.add(SetSearchString(phrase));
+      pinSelected: (List<ChatGroup> selected) {
+        // widget.onTogglePinned(selected);
+        this.logic.dispatch.add(PinSelectedEvent());
+        if (widget.onTogglePinned != null) {
+          widget.onTogglePinned(selected);
+        }
       },
-      onBackPressed: () {
-        this.bloc.dispatch.add(ClearSearchString());
+      deleteSelected: (List<ChatGroup> selected) {
+        // widget.onDeleted(selected);
+        this.logic.dispatch.add(DeleteSelectedEvent());
+        if (widget.onDeleted != null) {
+          widget.onDeleted(selected);
+        }
       },
-      onClearPressed: () {
-        this.bloc.dispatch.add(ClearSearchString());
+      muteSelected: (List<ChatGroup> selected) {
+        // widget.onToggleMuted(selected);
+        this.logic.dispatch.add(MuteSelectedEvent());
+        if (widget.onToggleMuted != null) {
+          widget.onToggleMuted(selected);
+        }
       },
-      leadingActionButtons: widget.leadingActions,
-      trailingActionButtons: widget.trailingActions,
-    );
-  }
-
-  muteSelected() {
-    this.bloc.dispatch.add(MuteSelectedEvent());
-  }
-
-  archiveSelected() {
-    this.bloc.dispatch.add(ArchiveSelectedEvent());
-  }
-
-  pinSelected() {
-    this.bloc.dispatch.add(PinSelectedEvent());
-  }
-
-  deleteSelected() {
-    this.bloc.dispatch.add(DeleteSelectedEvent());
-  }
-
-  markSelectedUnread() {
-    this.bloc.dispatch.add(MarkSelectedUnreadEvent());
-  }
-
-  openNewChatScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => UserSearchScreen(
-                onUserSearch: (String value) {
-                  return [
-                    Contact(
-                      id: '1',
-                      username: 'nodnol',
-                      photoUrl: 'nodnol',
-                      lastOnline: DateTime.now(),
-                      isActive: false,
-                    )
-                  ];
-                },
-              )),
+      archiveSelected: (List<ChatGroup> selected) {
+        // widget.onArchived(selected);
+        this.logic.dispatch.add(ArchiveSelectedEvent());
+        if (widget.onArchived != null) {
+          widget.onArchived(selected);
+        }
+      },
+      markSelectedUnread: (List<ChatGroup> selected) {
+        // widget.onMarkedUnread(selected);
+        this.logic.dispatch.add(MarkSelectedUnreadEvent());
+        if (widget.onMarkedUnread != null) {
+          widget.onMarkedUnread(selected);
+        }
+      },
     );
   }
 
   buildScaffoldBody(ChatListState state) {
-    if (state == null) {
-      return buildLoading();
-    }
-
     switch (state) {
       case ChatListState.list:
       case ChatListState.selection:
@@ -386,160 +195,106 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
   }
 
   buildChatGroupList() {
-    return StreamBuilder<List<T>>(
-        stream: this.bloc.visibleChatGroupsStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Container(
-              child: Center(child: Text("No chats found")),
-            );
-          }
+    // return StreamBuilder<List<ChatGroup>>(
+    //     initialData: widget.chatGroups,
+    //     stream: this.logic.visibleChatGroupsStream,
+    //     builder:
+    //         (BuildContext context, AsyncSnapshot<List<ChatGroup>> snapshot) {
+    //       if (!snapshot.hasData || snapshot.data.length == 0) {
+    //         return Container(
+    //           child: Center(child: Text("No chats found")),
+    //         );
+    //       }
 
-          List<ChatGroup> visibleChats = snapshot.data;
+    //       List<ChatGroup> visibleChats = snapshot.data;
+
+    return StreamBuilder<List<String>>(
+        initialData: [],
+        stream: this.logic.selectedChatGroupsStream,
+        builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+          List<String> selectedChatIds = snapshot.data;
+
           return Column(
             children: <Widget>[
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: visibleChats.length,
-                  itemBuilder: (context, index) {
-                    return buildChatGroupTile(visibleChats[index]);
-                  },
-                ),
-              ),
+              buildChatGroupsList(selectedChatIds),
               buildArchivedButton()
             ],
           );
         });
+    // });
   }
 
-  buildArchivedButton() {
-    return StreamBuilder<List<T>>(
-        stream: this.bloc.archivedChatGroupsStream,
-        builder: (context, archivedSnapshot) {
-          if (!archivedSnapshot.hasData || archivedSnapshot.data.length < 1) {
-            return Container();
-          }
+  List<ChatGroup> searchFilterChats(
+      List<ChatGroup> chatGroups, String searchPhrase) {
+    if (searchPhrase == null) {
+      return chatGroups;
+    }
 
-          return ListTile(
-            title: Text("Archived ${archivedSnapshot.data.length}"),
-            onTap: () {
-              // this._bloc.dispatch.add(ViewArchivedEvent());
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        ChatGroupList<ChatGroup, ArchivedChatListScreenLogic>(
-                          title: "Archived",
-                          onUnarchived: (List<ChatGroup> unarchived) {
-                            this.bloc.dispatch.add(UnArchivedEvent(unarchived));
-                          },
-                          onDeleted: (List<ChatGroup> unarchived) {
-                            this
-                                .bloc
-                                .dispatch
-                                .add(DeletedArchivedEvent(unarchived));
-                          },
-                          stateCreator: () {
-                            if (widget.archiveStateCreator != null) {
-                              return widget.archiveStateCreator();
-                            } else {
-                              return ArchivedChatGroupListState();
-                            }
-                          },
-                          logicCreator: () {
-                            if (widget.archiveLogicCreator != null) {
-                              return widget.archiveLogicCreator();
-                            } else {
-                              return ArchivedChatListScreenLogic();
-                            }
-                          },
-                          chatGroups: archivedSnapshot.data,
-                          onLoadListAtEnd: () {
-                            if (widget.onLoadListAtEnd != null) {
-                              return widget.onLoadListAtEnd();
-                            }
-                          },
-                          user: widget.user,
-                        )),
-              );
-            },
+    return chatGroups
+        .where((cg) => cg.name.toLowerCase().contains(searchPhrase))
+        .toList();
+  }
+
+  buildChatGroupsList(List<String> selectedChatIds) {
+    return StreamBuilder<String>(
+        stream: this.logic.searchChatGroupsStream,
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          // Ugly seach filter without rendering twice when chats update
+          List<ChatGroup> visibleChats =
+              searchFilterChats(widget.chatGroups, snapshot.data);
+
+          return Expanded(
+            child: ListView.builder(
+              controller: scrollController,
+              itemCount: visibleChats.length,
+              itemBuilder: (context, index) {
+                return buildListTile(visibleChats[index],
+                    selectedChatIds.contains(visibleChats[index].id));
+              },
+            ),
           );
         });
   }
 
-  buildChatGroupTile(T chatGroup) {
-    return Container(
-      color: chatGroup.selected ? Colors.blue[100] : null,
-      child: ListTile(
-        onTap: () => onChatGroupTileTap(chatGroup),
-        onLongPress: () => onChatGroupTileLongPress(chatGroup),
-        leading: buildChatGroupAvatar(chatGroup),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                chatGroup.name,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            buildDateTime(chatGroup)
-          ],
-        ),
-        subtitle: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                chatGroup.lastMessage,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            chatGroup.pinned ? buildPinned(chatGroup) : Container(),
-            chatGroup.muted ? buildMuted(chatGroup) : Container(),
-            chatGroup.seen(widget.user.id) != true
-                ? buildNotSeen(chatGroup)
-                : Container()
-          ],
-        ),
-      ),
+  Widget buildListTile(ChatGroup chatGroup, bool selected) {
+    return ChatGroupTile(
+      selected: selected,
+      chatGroup: chatGroup,
+      onChatGroupTileTap: onChatGroupTileTap,
+      onChatGroupTileLongPress: onChatGroupTileLongPress,
+      chatGroupAvatarBuilder: buildChatGroupAvatar,
     );
   }
 
-  Widget buildDateTime(T chatGroup) {
-    DateTime dateTime = chatGroup.created.toUtc();
-    String dateString = formatDateString(dateTime);
-    return Text(dateString, style: TextStyle(color: Colors.grey));
+  Widget buildArchivedButton() {
+    return Container();
   }
 
-  String formatDateString(DateTime dateTime) {
-    Duration timeDifference = new DateTime.now().difference(dateTime);
+  void onChatGroupTileTap(ChatGroup chatGroup) {
+    if (this.logic.currentState == ChatListState.selection) {
+      this.logic.dispatch.add(ToggleSelectedEvent(chatGroup));
+      // this.onSelected(chatGroup);
 
-    if (timeDifference.inDays < 1) {
-      final fifteenAgo = new DateTime.now().subtract(timeDifference);
-      return timeago.format(fifteenAgo, locale: 'en_short');
+      if (widget.onSelected != null) {
+        widget.onSelected(chatGroup);
+      }
+      // widget.onSelected(chatGroup);
     } else {
-      final DateFormat formatter = DateFormat('dd-MM-yyyy');
-      return formatter.format(dateTime);
+      // this.onTap(chatGroup);
+      if (widget.onTap != null) {
+        widget.onTap(chatGroup);
+      }
     }
   }
 
-  Widget buildPinned(T chatGroup) {
-    return Icon(Icons.person_pin, color: Colors.grey);
+  void onChatGroupTileLongPress(ChatGroup chatGroup) {
+    this.logic.dispatch.add(ToggleSelectedEvent(chatGroup));
+    if (widget.onLongPress != null) {
+      widget.onLongPress(chatGroup);
+    }
   }
 
-  Widget buildMuted(T chatGroup) {
-    return Icon(Icons.volume_mute, color: Colors.grey);
-  }
-
-  Widget buildNotSeen(T chatGroup) {
-    return CircleAvatar(
-      radius: 5,
-    );
-  }
-
-  buildChatGroupAvatar(T chatGroup) {
+  Widget buildChatGroupAvatar(ChatGroup chatGroup, bool selected) {
     Widget avatar = CircleAvatar(
       child: chatGroup.imageUrl != null
           ? CachedNetworkImage(
@@ -550,7 +305,7 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
           : Container(),
     );
 
-    if (!chatGroup.selected) {
+    if (!selected) {
       return avatar;
     }
 
@@ -569,17 +324,271 @@ class ChatGroupListState<T extends ChatGroup, L extends ChatGroupListLogic<T>>
       ],
     );
   }
+}
 
-  onChatGroupTileTap(T chatGroup) {
-    if (this.bloc.currentState == ChatListState.selection) {
-      this.bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
-      widget.onSelected(chatGroup);
+class ChatGroupListLogic {
+  ChatListState currentState = ChatListState.loading;
+
+  String searchPhrase;
+  // List<ChatGroup> _chatGroups = new List<ChatGroup>();
+  List<String> selectedChatGroupIds = new List<String>();
+
+  ChatGroupListLogic() {
+    eventController.stream.listen(handleGotEvent);
+    listenToState();
+  }
+
+  // List<ChatGroup> get chatGroups => this._chatGroups;
+  // set chatGroups(List<ChatGroup> chatGroups) {
+  // this._chatGroups = chatGroups;
+
+  //   bool selecting = chatGroups.any((cg) => cg.selected);
+  //   if (selecting) {
+  //     setStateEvent(SetStateEvent(ChatListState.selection));
+  //   }
+
+  //   visibleChatGroupsSink.add(this.chatGroups);
+  // }
+
+  listenToState() {
+    stateStreamController.stream.listen((ChatListState newState) {
+      if (currentState == ChatListState.selection &&
+          newState != ChatListState.selection) {
+        unselectAll();
+      }
+      currentState = newState;
+    });
+  }
+
+  // listenToChatsStream() {
+  //   chatGroupsStreamController.stream.listen((List<T> chatGroups) {
+  //     // bool viewArchived = this.currentState == ChatListState.listarchived;
+  //     // List<T> nonArchived = chatGroups.archivedIs(viewArchived);
+  //     visibleChatGroupsStreamController.add(chatGroups);
+  //   });
+  // }
+
+  handleGotEvent(ChatListEvent event) {
+    if (event is SetStateEvent) {
+      return setStateEvent(event);
+    }
+
+    //** Search Events */
+    if (event is SetSearchString) {
+      return setSearchString(event);
+    }
+
+    if (event is ClearSearchString) {
+      return clearSearchString();
+    }
+
+    // Selected events
+    if (event is ToggleSelectedEvent) {
+      return toggleSelectedEvent(event);
+    }
+
+    // if (event is MuteSelectedEvent) {
+    //   return muteSelectedEvent();
+    // }
+
+    // if (event is ArchiveSelectedEvent) {
+    //   return archiveSelectedEvent();
+    // }
+
+    // if (event is MarkSelectedUnreadEvent) {
+    //   return markSelectedUnreadEvent();
+    // }
+
+    // if (event is PinSelectedEvent) {
+    //   return pinSelectedEvent();
+    // }
+
+    // if (event is DeleteSelectedEvent) {
+    //   return deleteSelectedEvent();
+    // }
+
+    // if (event is SelectAllEvent) {
+    //   return selectAllEvent();
+    // }
+
+    // if (event is UnArchivedEvent) {
+    //   return unArchivedEvent(event);
+    // }
+
+    // if (event is DeletedArchivedEvent) {
+    //   return deletedArchivedEvent(event);
+    // }
+  }
+
+  // selectAllEvent() {
+  //   // List<ChatGroup> allChats = this.chatGroups.map((cg) {
+  //   //   return cg.copyWith(selected: true);
+  //   // }).toList();
+
+  //   // this.visibleChatGroupsSink.add(allChats);
+  // }
+
+  // deleteSelectedEvent() {
+  //   // List<ChatGroup> allChats = this.chatGroups.map((cg) {
+  //   //   bool selected = _selectedChatGroups.contains(cg);
+  //   //   return cg.copyWith(deleted: selected);
+  //   // }).toList();
+
+  //   this.visibleChatGroupsSink.add([]);
+
+  //   unselectAll();
+  //   stateStreamController.add(ChatListState.list);
+  // }
+
+  // pinSelectedEvent() {
+  //   List<ChatGroup> allChats = this.chatGroups.map((cg) {
+  //     bool selected = _selectedChatGroups.contains(cg);
+
+  //     if (selected) {
+  //       return cg.copyWith(pinned: !cg.pinned);
+  //     }
+
+  //     return cg;
+  //   }).toList();
+
+  //   unselectAll();
+  //   stateStreamController.add(ChatListState.list);
+  //   this.visibleChatGroupsSink.add(allChats);
+  // }
+
+  // markSelectedUnreadEvent() {
+  //   List<ChatGroup> allChats = this.chatGroups.map((cg) {
+  //     bool selected = _selectedChatGroups.contains(cg);
+  //     if (selected) {
+  //       return cg.copyWith(read: false);
+  //     }
+
+  //     return cg;
+  //   }).toList();
+
+  //   this.visibleChatGroupsSink.add(allChats);
+  // }
+
+  // archiveSelectedEvent() {
+  //   List<ChatGroup> allChats = this.chatGroups.map((cg) {
+  //     // bool selected = _selectedChatGroups.contains(cg);
+  //     int index = _selectedChatGroups.indexOf(cg);
+  //     if (index > -1) {
+  //       return cg.copyWith(archived: !cg.archived);
+  //     }
+
+  //     return cg;
+  //   }).toList();
+
+  //   this.visibleChatGroupsSink.add(allChats);
+
+  //   unselectAll();
+  //   stateStreamController.add(ChatListState.list);
+  // }
+
+  // muteSelectedEvent() {
+  //   List<ChatGroup> allChats = this.chatGroups.map((cg) {
+  //     bool selected = _selectedChatGroups.contains(cg);
+  //     if (selected) {
+  //       return cg.copyWith(muted: !cg.muted);
+  //     }
+
+  //     return cg;
+  //   }).toList();
+
+  //   this.visibleChatGroupsSink.add(allChats);
+
+  //   unselectAll();
+  //   stateStreamController.add(ChatListState.list);
+  // }
+
+  toggleSelectedEvent(ToggleSelectedEvent event) {
+    // int index = this.chatGroups.indexOf(event.chatGroup);
+
+    if (selectedChatGroupIds.contains(event.chatGroup.id)) {
+      selectedChatGroupIds.remove(event.chatGroup.id);
     } else {
-      widget.onTap(chatGroup);
+      selectedChatGroupIds.add(event.chatGroup.id);
+    }
+
+    if (selectedChatGroupIds.length > 0 &&
+        this.currentState != ChatListState.selection) {
+      stateStreamController.add(ChatListState.selection);
+    }
+
+    // List<ChatGroup> allChats = this.chatGroups.map((cg) {
+    //   bool selected = _selectedChatGroups.contains(cg);
+    //   return cg.copyWith(selected: selected);
+    // }).toList();
+
+    // List<ChatGroup> allSelected = allChats.selected();
+
+    // this.visibleChatGroupsSink.add(allChats);
+    this.selectedChatGroupsSink.add(selectedChatGroupIds);
+
+    if (this.searchPhrase != null && this.searchPhrase.isNotEmpty) {
+      clearSearchString();
     }
   }
 
-  onChatGroupTileLongPress(T chatGroup) {
-    this.bloc.dispatch.add(ToggleSelectedEvent(chatGroup));
+  clearSearchString() {
+    // Runs through the visible filters
+    // visibleChatGroupsSink.add(this.chatGroups);
+    this.searchPhrase = '';
+    searchChatGroupsSink.add(searchPhrase);
+  }
+
+  setSearchString(SetSearchString event) {
+    this.searchPhrase = event.phrase;
+    searchChatGroupsSink.add(searchPhrase);
+
+    // List<ChatGroup> chatGroups = this
+    //     .chatGroups
+    //     .where((cg) => cg.name.toLowerCase().contains(event.phrase))
+    //     .toList();
+
+    // visibleChatGroupsSink.add(chatGroups);
+  }
+
+  unselectAll() {
+    // visibleChatGroupsSink.add(this.chatGroups);
+    selectedChatGroupsSink.add([]);
+  }
+
+  final stateStreamController = StreamController<ChatListState>.broadcast();
+  StreamSink<ChatListState> get stateSink => stateStreamController.sink;
+  Stream<ChatListState> get stateStream => stateStreamController.stream;
+  setStateEvent(SetStateEvent event) {
+    // currentState = event.state;
+    stateSink.add(event.state);
+  }
+
+  final selectedStreamController = StreamController<List<String>>.broadcast();
+  StreamSink<List<String>> get selectedChatGroupsSink =>
+      selectedStreamController.sink;
+  Stream<List<String>> get selectedChatGroupsStream =>
+      selectedStreamController.stream;
+
+  final eventController = StreamController<ChatListEvent>();
+  Sink<ChatListEvent> get dispatch {
+    return eventController.sink;
+  }
+
+  final searchStreamController = StreamController<String>.broadcast();
+  StreamSink<String> get searchChatGroupsSink => searchStreamController.sink;
+  Stream<String> get searchChatGroupsStream => searchStreamController.stream;
+
+  // final visibleChatGroupsStreamController = StreamController<List<ChatGroup>>();
+  // StreamSink<List<ChatGroup>> get visibleChatGroupsSink =>
+  //     visibleChatGroupsStreamController.sink;
+  // Stream<List<ChatGroup>> get visibleChatGroupsStream =>
+  //     visibleChatGroupsStreamController.stream;
+
+  void close() {
+    // visibleChatGroupsStreamController.close();
+    searchStreamController.close();
+    selectedStreamController.close();
+    eventController.close();
+    stateStreamController.close();
   }
 }

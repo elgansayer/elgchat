@@ -154,25 +154,25 @@ class ConversationListLogic {
       selectedStreamController.stream;
 
   toggleSelectedEvent(ToggleSelectedEvent event) {
-    int index = this.chatMessages.indexOf(event.chatMessage);
-    ChatMessage oldChatMessage = this.chatMessages.elementAt(index);
-    ChatMessage newChatMessage =
-        event.chatMessage.copyWith(selected: !oldChatMessage.selected);
+    // int index = this.chatMessages.indexOf(event.chatMessage);
+    // ChatMessage oldChatMessage = this.chatMessages.elementAt(index);
+    // ChatMessage newChatMessage =
+    //     event.chatMessage.copyWith(selected: !oldChatMessage.selected);
 
-    this.chatMessages.replaceRange(index, index + 1, [newChatMessage]);
-    chatMessagesStreamController.add(this.chatMessages);
+    // this.chatMessages.replaceRange(index, index + 1, [newChatMessage]);
+    // chatMessagesStreamController.add(this.chatMessages);
 
-    if (this.currentState != ConversationState.selection) {
-      stateStreamController.add(ConversationState.selection);
-    }
+    // if (this.currentState != ConversationState.selection) {
+    //   stateStreamController.add(ConversationState.selection);
+    // }
 
-    if (newChatMessage.selected) {
-      this.selectedChatMessage = newChatMessage;
-      this.selectedStreamController.add(newChatMessage);
-    } else {
-      this.selectedChatMessage = newChatMessage;
-      this.selectedStreamController.add(null);
-    }
+    // if (newChatMessage.selected) {
+    //   this.selectedChatMessage = newChatMessage;
+    //   this.selectedStreamController.add(newChatMessage);
+    // } else {
+    //   this.selectedChatMessage = newChatMessage;
+    //   this.selectedStreamController.add(null);
+    // }
   }
 
   dispose() {

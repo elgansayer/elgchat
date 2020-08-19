@@ -25,11 +25,17 @@ class TogglePinnedCallbackEvent<T extends ChatGroup>
   TogglePinnedCallbackEvent(this.chatGroups);
 }
 
-class MarkedSeenCallbackEvent<T extends ChatGroup>
+class MarkedUnreadCallbackEvent<T extends ChatGroup>
     extends ChatListCallbackEvent {
   final List<T> chatGroups;
-  MarkedSeenCallbackEvent(this.chatGroups);
+  MarkedUnreadCallbackEvent(this.chatGroups);
 }
+
+// class MarkedUnseenCallbackEvent<T extends ChatGroup>
+//     extends ChatListCallbackEvent {
+//   final List<T> chatGroups;
+//   MarkedUnseenCallbackEvent(this.chatGroups);
+// }
 
 class ArchivedCallbackEvent<T extends ChatGroup> extends ChatListCallbackEvent {
   final List<T> chatGroups;

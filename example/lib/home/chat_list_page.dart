@@ -19,8 +19,9 @@ class _ChatListPageState extends State<ChatListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChatGroupsBloc, ChatGroupsState>(
-        builder: (BuildContext context, ChatGroupsState state) {
+    return BlocBuilder<ChatGroupScreenBloc, ChatGroupScreenState>(
+        builder: (BuildContext context, ChatGroupScreenState state) {
+
       if (state is LoadedChatGroups) {
         return _buildList(state);
       }
@@ -59,10 +60,10 @@ class _ChatListPageState extends State<ChatListPage> {
       //   // });
       // }),
       onTap: (ChatGroup chatGroup) => _onChatGroupTap(context, chatGroup),
-      chatGroupsRef: chatGroups,
+      chatGroups: chatGroups,
       // onLoadChatGroups: onLoadChatGroups,
       // onLoadMoreChatGroups: onLoadMoreChatGroups,
-      stateCreator: () => MyChatScreenState(),
+      stateCreator: () => ChatGroupListState(),
       trailingActions: [
         IconButton(
           icon: Icon(Icons.add),
@@ -70,10 +71,39 @@ class _ChatListPageState extends State<ChatListPage> {
         )
       ],
       user: contact,
+      onTogglePinned: (List<ChatGroup> chatGroups) {
+        BlocProvider.of<ChatGroupScreenBloc>(context)
+            .add(TogglePinned(chatGroups: chatGroups));
+      },
+      onToggleMuted: (List<ChatGroup> chatGroups) {
+        BlocProvider.of<ChatGroupScreenBloc>(context)
+            .add(ToggleMuted(chatGroups: chatGroups));
+      },
+      // onMarkedRead: (List<ChatGroup> chatGroups) {
+      //   BlocProvider.of<ChatGroupScreenBloc>(context)
+      //       .add(MarkUnread(userId: contact.id, chatGroups: chatGroups));
+      // },
+      onMarkedUnread: (List<ChatGroup> chatGroups) {
+        BlocProvider.of<ChatGroupScreenBloc>(context)
+            .add(MarkUnread(userId: contact.id, chatGroups: chatGroups));
+      },
+      onArchived: (List<ChatGroup> chatGroups) {
+        BlocProvider.of<ChatGroupScreenBloc>(context)
+            .add(ArchiveChatGroups(chatGroups: chatGroups));
+      },
+      // onUnarchived: (List<ChatGroup> chatGroups) {
+      //   BlocProvider.of<ChatGroupScreenBloc>(context)
+      //       .add(unarchiveChatGroups(chatGroups: chatGroups));
+      // },
     );
   }
 
   void _onChatGroupTap(BuildContext context, ChatGroup chatGroup) {
+    final Contact contact = _getContact();
+
+    BlocProvider.of<ChatGroupScreenBloc>(context)
+        .add(MarkRead(userId: contact.id, chatGroups: [chatGroup]));
+
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -194,4 +224,4 @@ class _ChatListPageState extends State<ChatListPage> {
 //   }
 // }
 
-class MyChatScreenState extends ChatGroupListState {}
+// class MyChatScreenState extends ChatGroupListState {}

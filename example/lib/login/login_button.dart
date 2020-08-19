@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class LoginButton extends StatelessWidget {
-  final VoidCallback _onPressed;
+  final Function _onPressed;
 
-  LoginButton({Key key, VoidCallback onPressed})
+  LoginButton({Key key, Function onPressed})
       : _onPressed = onPressed,
         super(key: key);
 

@@ -1,40 +1,40 @@
-import 'package:elgchat/bloc/chat_list_bloc.dart';
-import 'bloc/chat_list_callback_events.dart';
-import 'models.dart';
+// import 'package:elgchat/bloc/chat_list_bloc.dart';
+// import 'bloc/chat_list_callback_events.dart';
+// import 'models.dart';
 
-class ArchivedChatListScreenLogic<T extends ChatGroup>
-    extends ChatGroupListLogic<T> {
-  @override
-  archiveSelectedEvent() {
-    List<T> allSelected = chatGroups.selected();
+// class ArchivedChatListScreenLogic<T extends ChatGroup>
+//     extends ChatGroupListLogic<T> {
+//   @override
+//   archiveSelectedEvent() {
+//     List<T> allSelected = chatGroups.selected();
 
-    chatGroups = chatGroups.map((T cg) {
-      bool selected = allSelected.contains(cg);
-      if (selected) {
-        return cg.copyWith(archived: false, selected: false);
-      }
-      return cg;
-    }).toList();
+//     chatGroups = chatGroups.map((T cg) {
+//       bool selected = allSelected.contains(cg);
+//       if (selected) {
+//         return cg.copyWith(archived: false, selected: false);
+//       }
+//       return cg;
+//     }).toList();
 
-    // Get all selected, remove them from the list
-    chatGroups.removeWhere((cg) => allSelected.contains(cg));
+//     // Get all selected, remove them from the list
+//     chatGroups.removeWhere((cg) => allSelected.contains(cg));
 
-    unselectAll();
-    stateStreamController.add(ChatListState.list);
+//     unselectAll();
+//     stateStreamController.add(ChatListState.list);
 
-    // This fires widget.onUnArchived
-    this.dispatchCallback.add(UnarchivedCallbackEvent(allSelected));
-  }
+//     // This fires widget.onUnArchived
+//     this.dispatchCallback.add(UnarchivedCallbackEvent(allSelected));
+//   }
 
-  selectAllEvent() {
-    chatGroups = chatGroups.map((T cg) {
-      if (cg.archived != true) {
-        return cg.copyWith(selected: true);
-      }
-      return cg.copyWith(selected: false);
-    }).toList();
+//   selectAllEvent() {
+//     chatGroups = chatGroups.map((T cg) {
+//       if (cg.archived != true) {
+//         return cg.copyWith(selected: true);
+//       }
+//       return cg.copyWith(selected: false);
+//     }).toList();
 
-    chatGroupsStreamController.add(this.chatGroups);
-    this.selectedStreamController.add(this.chatGroups);
-  }
-}
+//     chatGroupsStreamController.add(this.chatGroups);
+//     this.selectedStreamController.add(this.chatGroups);
+//   }
+// }

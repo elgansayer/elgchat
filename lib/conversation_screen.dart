@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'bloc/conversation_bloc.dart';
 import 'bloc/conversation_event.dart';
 import 'bubble.dart';
-import 'emoji_keyboard.dart';
+// import 'emoji_keyboard.dart';
 import 'models.dart';
 
 typedef LoadChatMessagesCallback = Future<List<ChatMessage>> Function();
@@ -24,7 +24,7 @@ class ConversationList extends StatefulWidget {
   final List<ChatMessage> chatMessagesRef;
 
   final Contact contact;
-  final Function onNewChatMessage;
+  final VoidCallback onNewChatMessage;
 
   // Any widget to appear above the input area
   final Widget aboveInputArea;
@@ -370,11 +370,11 @@ class ConversationListState extends State<ConversationList> {
                                     IconButton(
                                         icon: Icon(Icons.tag_faces),
                                         onPressed: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      EmojiKeyboard()));
+                                          // Navigator.push(
+                                          //     context,
+                                          //     MaterialPageRoute(
+                                          //         builder: (context) =>
+                                          //             EmojiKeyboard()));
                                         }),
                                     Expanded(
                                       // constraints: BoxConstraints.lerp(

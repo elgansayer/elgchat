@@ -39,11 +39,12 @@ abstract class ChatGroupProps {
   static const String lastMessage = "lastMessage";
   static const String created = "created";
   static const String updated = "updated";
-  static const String seen = "seen";
+
+  static const String readBy = "readBy";
   static const String userIds = "userIds";
   static const String creatorId = "creatorId";
 
-  static const String selected = "selected";
+  // static const String selected = "selected";
   static const String archived = "archived";
   static const String muted = "muted";
   static const String pinned = "pinned";
@@ -56,132 +57,80 @@ class ChatGroup extends Equatable {
   final String lastMessage;
   final String creatorId;
   final DateTime created;
-  final DateTime update;
-  final List<String> seenBy;
-  final List<String> userIds;
+  final DateTime updated;
+  // final List<String> readBy;
+  // final List<String> userIds;
 
   // If a user was in seen
   // final bool seen;
-  final bool selected;
+  // final bool selected;
   final bool archived;
   final bool muted;
   final bool pinned;
+  final bool read;
 
   ChatGroup(
-      {this.creatorId,
-      this.update,
-      this.userIds,
+      {this.read = false,
+      this.creatorId,
+      this.updated,
+      // this.userIds,
       this.pinned = false,
       this.muted = false,
       this.archived = false,
-      this.selected = false,
+      // this.selected = false,
       this.imageUrl,
       this.id,
       this.lastMessage,
       this.created,
-      this.seenBy = const [],
+      // this.readBy = const [],
       this.name})
       : assert(id != null),
         assert(name != null);
 
-  ChatGroup copyWith(
-      {String id,
-      String name,
-      String lastMessage,
-      DateTime date,
-      String avatarUrl,
-      bool selected,
-      bool archived,
-      bool muted,
-      bool pinned,
-      String creatorId,
-      DateTime update,
-      List<String> seenBy,
-      List<String> userIds}) {
+  ChatGroup copyWith({
+    String id,
+    String name,
+    String lastMessage,
+    DateTime date,
+    String imageUrl,
+    // bool selected,
+    bool archived,
+    bool muted,
+    bool pinned,
+    bool read,
+    String creatorId,
+    DateTime updated,
+    // List<String> seenBy,
+    // List<String> userIds
+  }) {
     return ChatGroup(
-        muted: muted ?? this.muted,
-        pinned: pinned ?? this.pinned,
-        archived: archived ?? this.archived,
-        selected: selected ?? this.selected,
-        imageUrl: avatarUrl ?? this.imageUrl,
-        id: id ?? this.id,
-        lastMessage: lastMessage ?? this.lastMessage,
-        created: date ?? this.created,
-        seenBy: seenBy ?? this.seenBy,
-        name: name ?? this.name,
-        creatorId: creatorId ?? this.creatorId,
-        update: update ?? this.update,
-        userIds: userIds ?? this.userIds);
+      muted: muted ?? this.muted,
+      pinned: pinned ?? this.pinned,
+      archived: archived ?? this.archived,
+      // selected: selected ?? this.selected,
+      imageUrl: imageUrl ?? this.imageUrl,
+      id: id ?? this.id,
+      lastMessage: lastMessage ?? this.lastMessage,
+      created: date ?? this.created,
+      // readBy: seenBy ?? this.readBy,
+      name: name ?? this.name,
+      creatorId: creatorId ?? this.creatorId,
+      updated: updated ?? this.updated,
+      read: read ?? this.read,
+      // userIds: userIds ?? this.userIds
+    );
   }
 
-  bool seen(String userId) {
-    return seenBy.contains(userId);
-  }
+  // bool read(String userId) {
+  //   if (userId.compareTo(this.creatorId) == 0) {
+  //     return true;
+  //   }
 
-  factory ChatGroup.fromMap(Map data, String documentID) {
-    return ChatGroup(
-        id: documentID,
-        muted: getParam<bool>(ChatGroupProps.muted, data, false),
-        pinned: getParam<bool>(ChatGroupProps.pinned, data, false),
-        archived: getParam<bool>(ChatGroupProps.archived, data, false),
-        selected: false,
-        imageUrl: getParam<String>(ChatGroupProps.imageUrl, data, ''),
-        lastMessage: getParam<String>(ChatGroupProps.lastMessage, data, ''),
-        created: getTimeFromMap(ChatGroupProps.created, data),
-        // seen: false,
-        name: getParam<String>(ChatGroupProps.name, data, ''),
-        creatorId: getParam<String>(ChatGroupProps.creatorId, data, ''),
-        update: getTimeFromMap(ChatGroupProps.updated, data),
-        userIds: getStrListParam<List<String>>(
-            ChatGroupProps.userIds, data, new List<String>()));
-  }
+  //   return readBy.contains(userId);
+  // }
 
   @override
   List<Object> get props => [this.id];
-}
-
-DateTime getTimeFromMap(String prop, Map data) {
-  try {
-    String dateString = data[prop];
-    if (dateString == null || dateString.isEmpty) {
-      return DateTime.now().toUtc();
-    }
-
-    var date = DateTime.parse(dateString).toUtc();
-    return DateTime.fromMillisecondsSinceEpoch(date.millisecondsSinceEpoch)
-        .toLocal();
-  } catch (e) {
-    print(e);
-    return DateTime.now().toUtc();
-  }
-}
-
-T getStrListParam<T>(String param, dynamic data, T value) {
-  var ret;
-
-  try {
-    ret = (data?.containsKey(param) ?? false)
-        ? (data[param] as List<dynamic>).map((e) => e.toString()).toList()
-        : value;
-  } catch (e) {
-    print(e);
-    return value;
-  }
-
-  return ret;
-}
-
-T getParam<T>(String param, Map data, T defaultValue) {
-  var ret;
-
-  try {
-    ret = (data?.containsKey(param) ?? false) ? data[param] as T : defaultValue;
-  } catch (e) {
-    print(e);
-    return defaultValue;
-  }
-
-  return ret;
 }
 
 class ChatMessage extends Equatable {
@@ -191,13 +140,13 @@ class ChatMessage extends Equatable {
   final String userId;
   final List<String> mediaUrls;
   final List<String> reactions;
-  final bool selected;
+  // final bool selected;
   final bool starred;
   final bool deleted;
 
   ChatMessage(
       {this.reactions,
-      this.selected = false,
+      // this.selected = false,
       this.starred = false,
       this.deleted = false,
       this.mediaUrls,
@@ -216,13 +165,13 @@ class ChatMessage extends Equatable {
     String userId,
     List<String> mediaUrls,
     List<String> reactions,
-    bool selected,
+    // bool selected,
     bool starred,
     bool deleted,
   }) {
     return ChatMessage(
       reactions: reactions ?? this.reactions,
-      selected: selected ?? this.selected,
+      // selected: selected ?? this.selected,
       starred: starred ?? this.starred,
       mediaUrls: mediaUrls ?? this.mediaUrls,
       id: id ?? this.id,

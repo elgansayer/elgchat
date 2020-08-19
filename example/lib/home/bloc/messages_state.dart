@@ -1,14 +1,14 @@
 part of 'messages_bloc.dart';
 
 @immutable
-abstract class ChatGroupsState {}
+abstract class ChatGroupScreenState {}
 
-class MessagesInitial extends ChatGroupsState {}
+class MessagesInitial extends ChatGroupScreenState {}
 
-class LoadedChatGroups extends ChatGroupsState {
+class LoadedChatGroups extends ChatGroupScreenState {
   final List<ChatGroup> chatGroups;
 
   LoadedChatGroups({@required this.chatGroups});
 }
 
-class LoadError extends ChatGroupsState {}
+class LoadError extends ChatGroupScreenState {}

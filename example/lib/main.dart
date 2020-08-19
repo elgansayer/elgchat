@@ -10,6 +10,9 @@ import 'package:elgchat_example/simple_bloc_observer.dart';
 import 'home/home_screen.dart';
 
 void main() {
+
+  // firestore.settings(timestampsInSnapshotsEnabled: true);
+
   WidgetsFlutterBinding.ensureInitialized();
   Bloc.observer = SimpleBlocObserver();
   final UserRepository userRepository = UserRepository();

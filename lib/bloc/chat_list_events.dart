@@ -27,9 +27,9 @@ class AddChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
 }
 
 class SetChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
-  final List<T> chatGroupsRef;
+  // final List<T> chatGroupsRef;
   final List<T> chatGroups;
-  SetChatGroupsEvent(this.chatGroups, this.chatGroupsRef);
+  SetChatGroupsEvent(this.chatGroups);
 }
 
 class SetStateEvent extends ChatListEvent {
@@ -50,8 +50,8 @@ class ArchiveSelectedEvent extends ChatListEvent {
 }
 
 class MarkSelectedUnreadEvent extends ChatListEvent {
-final String userid;
-  MarkSelectedUnreadEvent({this.userid});
+// final String userid;
+  MarkSelectedUnreadEvent();
 }
 
 class PinSelectedEvent extends ChatListEvent {

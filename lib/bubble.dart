@@ -11,9 +11,9 @@ class ConvosationBubble extends StatelessWidget {
   final double radius;
   final bool owner;
   final bool showNip;
-  final VoidCallback onTap;
-  final VoidCallback onLongPress;
-  final VoidCallback onDoubleTap;
+  final Function onTap;
+  final Function onLongPress;
+  final Function onDoubleTap;
   final void Function(String) onGotReaction;
 
   ConvosationBubble(
@@ -112,7 +112,7 @@ class ConvosationBubble extends StatelessWidget {
   }
 
   OverlayEntry buildReactionsList(
-      layerLink, VoidCallback onTap, Function(String) onButtonTapped) {
+      layerLink, Function onTap, Function(String) onButtonTapped) {
     return OverlayEntry(
         builder: (context) => GestureDetector(
               onTap: onTap,

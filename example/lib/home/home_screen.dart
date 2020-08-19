@@ -34,8 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final FirebaseUser user = userRepository.user;
 
     return MultiBlocProvider(providers: [
-      BlocProvider<ChatGroupsBloc>(
-          create: (context) => ChatGroupsBloc(_chatGroupsRepository, _homeBloc)
+      BlocProvider<ChatGroupScreenBloc>(
+          create: (context) => ChatGroupScreenBloc(_chatGroupsRepository, _homeBloc)
             ..add(LoadChatGroups(userId: user.uid))),
       BlocProvider<ProfileBloc>(create: (context) => ProfileBloc()),
       BlocProvider<HomeBloc>(create: (context) => _homeBloc)
