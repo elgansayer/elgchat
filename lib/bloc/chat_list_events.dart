@@ -38,44 +38,53 @@ class SetStateEvent extends ChatListEvent {
 }
 
 class DeleteSelectedEvent extends ChatListEvent {
-  DeleteSelectedEvent();
+  final List<ChatGroup> chatGroups;
+  DeleteSelectedEvent(this.chatGroups);
 }
 
 class MuteSelectedEvent extends ChatListEvent {
-  MuteSelectedEvent();
+  final List<ChatGroup> chatGroups;
+  MuteSelectedEvent(this.chatGroups);
+}
+
+class UnarchiveSelectedEvent extends ChatListEvent {
+  final List<ChatGroup> chatGroups;
+  UnarchiveSelectedEvent(this.chatGroups);
 }
 
 class ArchiveSelectedEvent extends ChatListEvent {
-  ArchiveSelectedEvent();
+  final List<ChatGroup> chatGroups;
+  ArchiveSelectedEvent(this.chatGroups);
 }
 
 class MarkSelectedUnreadEvent extends ChatListEvent {
-// final String userid;
-  MarkSelectedUnreadEvent();
+  final List<ChatGroup> chatGroups;
+  MarkSelectedUnreadEvent(this.chatGroups);
 }
 
 class PinSelectedEvent extends ChatListEvent {
-  PinSelectedEvent();
+  final List<ChatGroup> chatGroups;
+  PinSelectedEvent(this.chatGroups);
 }
 
 class SelectAllEvent extends ChatListEvent {
   SelectAllEvent();
 }
 
-class SetArchivedChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
-  final List<T> chatGroups;
-  SetArchivedChatGroupsEvent(this.chatGroups);
-}
+// class SetArchivedChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
+//   final List<T> chatGroups;
+//   SetArchivedChatGroupsEvent(this.chatGroups);
+// }
 
-class UnArchivedEvent<T extends ChatGroup> extends ChatListEvent {
-  final List<T> chatGroups;
-  UnArchivedEvent(this.chatGroups);
-}
+// class UnArchivedEvent<T extends ChatGroup> extends ChatListEvent {
+//   final List<T> chatGroups;
+//   UnArchivedEvent(this.chatGroups);
+// }
 
-class DeletedArchivedEvent<T extends ChatGroup> extends ChatListEvent {
-  final List<T> chatGroups;
-  DeletedArchivedEvent(this.chatGroups);
-}
+// class DeletedArchivedEvent<T extends ChatGroup> extends ChatListEvent {
+//   final List<T> chatGroups;
+//   DeletedArchivedEvent(this.chatGroups);
+// }
 
 // class ViewArchivedEvent extends ChatListEvent {
 //   ViewArchivedEvent();

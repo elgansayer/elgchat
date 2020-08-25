@@ -59,8 +59,7 @@ class MyChatGroup extends ChatGroup {
 }
 
 class ChatGroupsRepository {
-  PublishSubject<List<MyChatGroup>> myChatList =
-      PublishSubject<List<MyChatGroup>>();
+  List<MyChatGroup> myChatList = List<MyChatGroup>();
 
   PublishSubject<List<ChatGroup>> chatList = PublishSubject<List<ChatGroup>>();
 
@@ -83,8 +82,9 @@ class ChatGroupsRepository {
           .map((DocumentSnapshot doc) => _buildChatGroupFrmDoc(userId, doc))
           .toList();
 
-      List<ChatGroup>  chatGroups = myChatGroups.map((MyChatGroup mcg) => mcg.copyWith()).toList();
-      myChatList.add(myChatGroups);
+      List<ChatGroup> chatGroups =
+          myChatGroups.map((MyChatGroup mcg) => mcg.copyWith()).toList();
+      myChatList.addAll(myChatGroups);
       chatList.add(chatGroups);
     });
 
@@ -192,6 +192,10 @@ class ChatGroupScreenBloc
       return;
     }
 
+    if (event is DeleteChatGroups) {
+      _deleteChatGroups(event);
+      return;
+    }
     if (event is TogglePinned) {
       _togglePinned(event);
       yield state;
@@ -262,19 +266,36 @@ class ChatGroupScreenBloc
     }
   }
 
+  void _deleteChatGroups(DeleteChatGroups event) {
+    WriteBatch fsBatch = Firestore.instance.batch();
+
+    for (var chatGroup in event.chatGroups) {
+      CollectionReference collectionRef =
+          Firestore.instance.collection(MyChatGroupProps.collectionName);
+      String documentId = chatGroup.id;
+      DocumentReference document = collectionRef.document(documentId);
+      fsBatch.delete(document);
+    }
+
+    fsBatch.commit();
+  }
+
   void _markRead(MarkRead event) {
     List<ChatGroupUpdateData> allUpdateData = new List<ChatGroupUpdateData>();
     for (var chatGroup in event.chatGroups) {
-      // List<String> readBy = [...chatGroup.readBy];
-      // if (readBy.contains(event.userId)) {
-      //   return;
-      // }
-      // readBy.add(event.userId);
+      MyChatGroup myChatGroup = chatGroupsRepository.myChatList
+          .firstWhere((cg) => cg.id == chatGroup.id);
 
-      // ChatGroupUpdateData chatGroupUpdateData = new ChatGroupUpdateData(
-      //     chatGroup.id, {ChatGroupProps.readBy: readBy});
+      List<String> readBy = [...myChatGroup.readBy];
+      if (readBy.contains(event.userId)) {
+        return;
+      }
+      readBy.add(event.userId);
 
-      // allUpdateData.add(chatGroupUpdateData);
+      ChatGroupUpdateData chatGroupUpdateData = new ChatGroupUpdateData(
+          chatGroup.id, {ChatGroupProps.readBy: readBy});
+
+      allUpdateData.add(chatGroupUpdateData);
     }
 
     this.chatGroupsRepository.updateChatGroups(allUpdateData);
@@ -283,13 +304,16 @@ class ChatGroupScreenBloc
   void _markUnread(MarkUnread event) {
     List<ChatGroupUpdateData> allUpdateData = new List<ChatGroupUpdateData>();
     for (var chatGroup in event.chatGroups) {
-      // List<String> readBy = [...chatGroup.readBy];
-      // readBy.removeWhere((String id) => id.compareTo(event.userId) == 0);
+      MyChatGroup myChatGroup = chatGroupsRepository.myChatList
+          .firstWhere((cg) => cg.id == chatGroup.id);
 
-      // ChatGroupUpdateData chatGroupUpdateData = new ChatGroupUpdateData(
-      //     chatGroup.id, {ChatGroupProps.readBy: readBy});
+      List<String> readBy = [...myChatGroup.readBy];
+      readBy.removeWhere((String id) => id.compareTo(event.userId) == 0);
 
-      // allUpdateData.add(chatGroupUpdateData);
+      ChatGroupUpdateData chatGroupUpdateData = new ChatGroupUpdateData(
+          chatGroup.id, {ChatGroupProps.readBy: readBy});
+
+      allUpdateData.add(chatGroupUpdateData);
     }
 
     this.chatGroupsRepository.updateChatGroups(allUpdateData);

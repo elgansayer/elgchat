@@ -21,7 +21,6 @@ class _ChatListPageState extends State<ChatListPage> {
   Widget build(BuildContext context) {
     return BlocBuilder<ChatGroupScreenBloc, ChatGroupScreenState>(
         builder: (BuildContext context, ChatGroupScreenState state) {
-
       if (state is LoadedChatGroups) {
         return _buildList(state);
       }
@@ -71,6 +70,10 @@ class _ChatListPageState extends State<ChatListPage> {
         )
       ],
       user: contact,
+      onDeleted: (List<ChatGroup> chatGroups) {
+        BlocProvider.of<ChatGroupScreenBloc>(context)
+            .add(DeleteChatGroups(chatGroups: chatGroups));
+      },
       onTogglePinned: (List<ChatGroup> chatGroups) {
         BlocProvider.of<ChatGroupScreenBloc>(context)
             .add(TogglePinned(chatGroups: chatGroups));
@@ -91,10 +94,10 @@ class _ChatListPageState extends State<ChatListPage> {
         BlocProvider.of<ChatGroupScreenBloc>(context)
             .add(ArchiveChatGroups(chatGroups: chatGroups));
       },
-      // onUnarchived: (List<ChatGroup> chatGroups) {
-      //   BlocProvider.of<ChatGroupScreenBloc>(context)
-      //       .add(unarchiveChatGroups(chatGroups: chatGroups));
-      // },
+      onUnarchived: (List<ChatGroup> chatGroups) {
+        BlocProvider.of<ChatGroupScreenBloc>(context)
+            .add(UnarchiveChatGroups(chatGroups: chatGroups));
+      },
     );
   }
 

@@ -23,6 +23,11 @@ class TogglePinned extends ChatGroupScreenEvent {
   TogglePinned({@required this.chatGroups});
 }
 
+class DeleteChatGroups extends ChatGroupScreenEvent {
+  final List<ChatGroup> chatGroups;
+  DeleteChatGroups({@required this.chatGroups});
+}
+
 class ToggleMuted extends ChatGroupScreenEvent {
   final List<ChatGroup> chatGroups;
   ToggleMuted({@required this.chatGroups});
