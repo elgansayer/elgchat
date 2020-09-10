@@ -1,0 +1,221 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "chat_groups",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userIds",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "updated",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "clubs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "searchTags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "creationDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "searchTags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "creationDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "forum_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "creationDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "forum_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "creationDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "forum_topics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "cId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "creationDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "private_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ownerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "postType",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "public_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "approval",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "ownerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "public_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ownerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "postType",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "public_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "approval",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "postType",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "public_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "approval",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "public_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "postType",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "public_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "searchTags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "creationDate",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

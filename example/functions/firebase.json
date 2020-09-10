@@ -1,0 +1,42 @@
+{
+  "functions": {
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run lint",
+      "npm --prefix \"$RESOURCE_DIR\" run build"
+    ],
+    "source": "functions"
+  },
+  "emulators": {
+    "functions": {
+      "host": "192.168.1.86",
+      "port": null
+    },
+    "firestore": {
+      "host": "192.168.1.86",
+      "port": 8080
+    },
+    "database": {
+      "host": "192.168.1.86",
+      "port": 9000
+    },
+    "hosting": {
+      "host": "192.168.1.86",
+      "port": 5000
+    },
+    "pubsub": {
+      "host": "192.168.1.86",
+      "port": 8085
+    },
+    "ui": {
+      "host": "192.168.1.86",
+      "enabled": true
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
