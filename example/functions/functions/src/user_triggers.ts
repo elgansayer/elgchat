@@ -8,7 +8,7 @@ const USERS = 'users';
 // interface User {
 //     uid: string;
 //     name: string;
-//     photoURL: string;
+//     photoUrl: string;
 //     lastSignInTime: string;
 // }
 
@@ -18,20 +18,12 @@ export const onNewUserTrigger = functions.auth.user().onCreate(async (user) => {
     await collection.doc(user.uid).set({
         uid: user.uid,
         name: user.displayName,
-        photoURL: user.photoURL,
+        photoUrl: user.photoURL,
         lastSignInTime: Date(),
     });
 });
-
 
 functions.auth.user().onDelete(async (user) => {
     const collection = admin.firestore().collection(USERS);
     await collection.doc(user.uid).delete();
 });
-
-
-export const userToElastic = functions.firestore
-    .document('users/{userId}')
-    .onCreate(async (snapshot: any, context: any) => {
-        console.log("userToElastic");
-    });

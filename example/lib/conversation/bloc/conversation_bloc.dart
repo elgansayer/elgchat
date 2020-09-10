@@ -126,7 +126,7 @@ class NewMessage {
         'id': this.chatGroup.id,
         'name': this.chatGroup.name,
         'photoUrl': this.chatGroup.photoUrl,
-        'receiverIds': this.receiverIds,
+        'receiverIds': this.receiverIds
       },
       'chatMessage': {
         // 'reactions': this.chatMessage.reactions.map((e) => e.toString()).toList(),

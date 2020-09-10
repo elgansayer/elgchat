@@ -72,7 +72,7 @@ class ChatGroupsRepository {
         pinned: getParam<bool>(ChatGroupProps.pinned, data, false),
         archived: getParam<bool>(ChatGroupProps.archived, data, false),
         selected: false,
-        imageUrl: getParam<String>(ChatGroupProps.imageUrl, data, ''),
+        photoUrl: getParam<String>(ChatGroupProps.photoUrl, data, ''),
         lastMessage: getParam<String>(ChatGroupProps.lastMessage, data, ''),
         created: getTimeFromMap(ChatGroupProps.created, data),
         name: getParam<String>(ChatGroupProps.name, data, ''),

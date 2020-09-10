@@ -35,7 +35,7 @@ class Contact extends Equatable {
 abstract class ChatGroupProps {
   static const String id = "id";
   static const String name = "name";
-  static const String imageUrl = "imageUrl";
+  static const String photoUrl = "photoUrl";
   static const String lastMessage = "lastMessage";
   static const String created = "created";
   static const String updated = "updated";
@@ -92,7 +92,7 @@ class ChatGroup extends Equatable {
     String name,
     String lastMessage,
     DateTime date,
-    String imageUrl,
+    String photoUrl,
     // bool selected,
     bool archived,
     bool muted,
@@ -108,7 +108,7 @@ class ChatGroup extends Equatable {
       pinned: pinned ?? this.pinned,
       archived: archived ?? this.archived,
       // selected: selected ?? this.selected,
-      photoUrl: imageUrl ?? this.photoUrl,
+      photoUrl: photoUrl ?? this.photoUrl,
       id: id ?? this.id,
       lastMessage: lastMessage ?? this.lastMessage,
       created: date ?? this.created,

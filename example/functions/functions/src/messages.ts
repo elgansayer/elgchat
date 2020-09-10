@@ -116,11 +116,11 @@ export async function newMessage(request: any, response: any) {
     });
 
     // Return the chat group id
-    const feedBAckJson = JSON.stringify({
+    const feedBackJson = JSON.stringify({
         chatGroupId: newChatGroup.id
     });
 
-    response.end(feedBAckJson);
+    response.end(feedBackJson);
 }
 
 
