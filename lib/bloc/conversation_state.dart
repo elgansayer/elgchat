@@ -2,11 +2,11 @@ import 'package:equatable/equatable.dart';
 
 
 
-abstract class ConversationState extends Equatable {
-  const ConversationState();
+abstract class ConversationLogicState extends Equatable {
+  const ConversationLogicState();
 }
 
-class ConversationInitial extends ConversationState {
+class ConversationInitial extends ConversationLogicState {
   @override
   List<Object> get props => [];
 }

@@ -1,4 +1,5 @@
 import 'package:bubble/bubble.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'models.dart';
@@ -7,6 +8,7 @@ double kMarginDepth = 55;
 
 class ConvosationBubble extends StatelessWidget {
   final bool showAvatar;
+  final String avatarUrl;
   final ChatMessage chatMessage;
   final double radius;
   final bool owner;
@@ -26,7 +28,8 @@ class ConvosationBubble extends StatelessWidget {
       this.onTap,
       this.onLongPress,
       this.onDoubleTap,
-      this.onGotReaction})
+      this.onGotReaction,
+      this.avatarUrl})
       : super(key: key);
 
   final LayerLink layerLink = LayerLink();
@@ -46,10 +49,7 @@ class ConvosationBubble extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(0, 1, 0, 1),
       child: Row(children: [
         showAvatar
-            ? CircleAvatar(
-                child: Text(chatMessage.userId.toString()),
-                radius: radius,
-              )
+            ? buildAvatar()
             : SizedBox(
                 width: radius * 2,
               ),
@@ -109,6 +109,27 @@ class ConvosationBubble extends StatelessWidget {
         ),
       ]),
     );
+  }
+
+  buildAvatar() {
+    Widget avatar = CircleAvatar(
+      child: avatarUrl != null && avatarUrl.isNotEmpty
+          ? CachedNetworkImage(
+              imageUrl: avatarUrl,
+              placeholder: (context, url) => CircularProgressIndicator(),
+              errorWidget: (context, url, error) => Icon(Icons.error),
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image:
+                      DecorationImage(image: imageProvider, fit: BoxFit.cover),
+                ),
+              ),
+            )
+          : Container(),
+    );
+
+    return avatar;
   }
 
   OverlayEntry buildReactionsList(

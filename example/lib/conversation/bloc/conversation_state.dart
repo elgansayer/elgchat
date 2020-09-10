@@ -5,8 +5,18 @@ class ConversationState extends Equatable {
   final List<ChatMessage> chatMessages;
   final ChatGroup chatGroup;
 
-  factory ConversationState.init() {
-    return ConversationState(chatGroup: null, chatMessages: []);
+  factory ConversationState.init(ChatGroup chatGroup) {
+    return ConversationState(chatGroup: chatGroup, chatMessages: []);
+  }
+
+  ConversationState copyWith({
+    List<ChatMessage> chatMessages,
+    ChatGroup chatGroup,
+  }) {
+    return ConversationState(
+      chatMessages: chatMessages ?? this.chatMessages,
+      chatGroup: chatGroup ?? this.chatGroup,
+    );
   }
 
   @override

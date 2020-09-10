@@ -4,9 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:elgchat/models.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:rxdart/rxdart.dart';
-
-import '../../models.dart';
+import 'chat_groups_repository.dart';
 import 'home_bloc.dart';
 
 part 'messages_event.dart';
@@ -43,11 +41,28 @@ class MyChatGroup extends ChatGroup {
             muted: muted,
             archived: archived,
             // selected: selected,
-            imageUrl: imageUrl,
+            photoUrl: imageUrl,
             id: id,
             lastMessage: lastMessage,
             created: created,
             name: name);
+
+  Map<String, dynamic> toMap() {
+    return {
+      ChatGroupProps.id: this.id,
+      ChatGroupProps.name: this.name,
+      ChatGroupProps.imageUrl: this.photoUrl,
+      ChatGroupProps.lastMessage: this.lastMessage,
+      ChatGroupProps.created: this.created,
+      ChatGroupProps.updated: this.updated,
+      ChatGroupProps.readBy: this.readBy,
+      ChatGroupProps.userIds: this.userIds,
+      ChatGroupProps.creatorId: this.creatorId,
+      ChatGroupProps.archived: this.archived,
+      ChatGroupProps.muted: this.muted,
+      ChatGroupProps.pinned: this.pinned,
+    };
+  }
 
   // bool isRead(String userId) {
   //   if (userId.compareTo(this.creatorId) == 0) {
@@ -56,111 +71,6 @@ class MyChatGroup extends ChatGroup {
 
   //   return readBy.contains(userId);
   // }
-}
-
-class ChatGroupsRepository {
-  List<MyChatGroup> myChatList = List<MyChatGroup>();
-
-  PublishSubject<List<ChatGroup>> chatList = PublishSubject<List<ChatGroup>>();
-
-  StreamSubscription _firebaseSubscription;
-
-  Stream<QuerySnapshot> monitor(String userId) {
-    final ref = Firestore.instance
-        .collection(MyChatGroupProps.collectionName)
-        .where(ChatGroupProps.userIds, arrayContains: userId)
-        .orderBy(ChatGroupProps.updated);
-
-    return ref.snapshots();
-  }
-
-  PublishSubject<List<ChatGroup>> get(String userId) {
-    _firebaseSubscription?.cancel();
-    _firebaseSubscription =
-        this.monitor(userId).listen((QuerySnapshot allGroups) {
-      List<MyChatGroup> myChatGroups = allGroups.documents
-          .map((DocumentSnapshot doc) => _buildChatGroupFrmDoc(userId, doc))
-          .toList();
-
-      List<ChatGroup> chatGroups =
-          myChatGroups.map((MyChatGroup mcg) => mcg.copyWith()).toList();
-      myChatList.addAll(myChatGroups);
-      chatList.add(chatGroups);
-    });
-
-    return this.chatList;
-  }
-
-  bool isRead(String userId, String creatorId, List<String> readBy) {
-    if (userId.compareTo(creatorId) == 0) {
-      return true;
-    }
-
-    return readBy.contains(userId);
-  }
-
-  MyChatGroup _buildChatGroupFrmDoc(String userId, DocumentSnapshot doc) {
-    Map data = doc.data;
-
-    List<String> readBy = getStrListParam<List<String>>(
-        ChatGroupProps.readBy, data, new List<String>());
-
-    String creatorId = getParam<String>(ChatGroupProps.creatorId, data, '');
-    bool read = isRead(userId, creatorId, readBy);
-
-    return MyChatGroup(
-        id: doc.documentID,
-        muted: getParam<bool>(ChatGroupProps.muted, data, false),
-        pinned: getParam<bool>(ChatGroupProps.pinned, data, false),
-        archived: getParam<bool>(ChatGroupProps.archived, data, false),
-        selected: false,
-        imageUrl: getParam<String>(ChatGroupProps.imageUrl, data, ''),
-        lastMessage: getParam<String>(ChatGroupProps.lastMessage, data, ''),
-        created: getTimeFromMap(ChatGroupProps.created, data),
-        name: getParam<String>(ChatGroupProps.name, data, ''),
-        creatorId: creatorId,
-        updated: getTimeFromMap(ChatGroupProps.updated, data),
-        read: read,
-        userIds: getStrListParam<List<String>>(
-            ChatGroupProps.userIds, data, new List<String>()),
-        readBy: readBy);
-  }
-
-  void updateChatGroups(List<ChatGroupUpdateData> allUpdateData) {
-    //Create a batch
-    WriteBatch fsBatch = Firestore.instance.batch();
-
-    CollectionReference collectionRef =
-        Firestore.instance.collection(MyChatGroupProps.collectionName);
-
-    for (ChatGroupUpdateData updateData in allUpdateData) {
-      fsBatch.updateData(
-          collectionRef.document(updateData.documentId), updateData.mappedData);
-    }
-
-    fsBatch.commit();
-  }
-
-  void setChatGroupsData(List<ChatGroupUpdateData> allUpdateData,
-      {bool marge: false}) {
-    //Create a batch
-    WriteBatch fsBatch = Firestore.instance.batch();
-
-    CollectionReference collectionRef =
-        Firestore.instance.collection(MyChatGroupProps.collectionName);
-
-    for (ChatGroupUpdateData updateData in allUpdateData) {
-      fsBatch.setData(
-          collectionRef.document(updateData.documentId), updateData.mappedData,
-          merge: marge);
-    }
-
-    fsBatch.commit();
-  }
-
-  void close() {
-    _firebaseSubscription?.cancel();
-  }
 }
 
 class ChatGroupUpdateData {
@@ -236,6 +146,11 @@ class ChatGroupScreenBloc
       return;
     }
 
+    if (event is CreateNewChat) {
+      yield* _openNewChat(event);
+      return;
+    }
+
     if (event is ChatGroupsLoaded) {
       try {
         yield LoadedChatGroups(chatGroups: event.chatGroups);
@@ -244,6 +159,43 @@ class ChatGroupScreenBloc
         print(e);
         yield LoadError();
       }
+    }
+  }
+
+  Stream<ChatGroupScreenState> _openNewChat(CreateNewChat event) async* {
+    List<ChatGroup> chatList = this.chatGroupsRepository.chatGroupList;
+    List<MyChatGroup> myChatList = this.chatGroupsRepository.myChatList;
+
+    String contactToId = event.userTo.id;
+    String userIdThisApp = event.userThisApp.id;
+
+    // Ignore group chats
+    MyChatGroup foundChatGroup = myChatList.firstWhere(
+        (cg) => cg.userIds.contains(contactToId) && cg.userIds.length == 2,
+        orElse: () => null);
+
+    if (foundChatGroup == null) {
+      ChatGroup newChatGroup = ChatGroup(
+          id: '-1',
+          name: event.userTo.username,
+          lastMessage: '',
+          created: DateTime.now(),
+          photoUrl: event.userTo.photoUrl,
+          creatorId: contactToId,
+          updated: DateTime.now());
+
+      yield OpenChatState(
+          chatGroup: newChatGroup,
+          userThisApp: event.userThisApp,
+          userTo: event.userTo);
+    } else {
+      final chatGroup = chatList.firstWhere((cg) => cg.id == foundChatGroup.id);
+      _markRead(MarkRead(chatGroups: [chatGroup], userId: userIdThisApp));
+
+      yield OpenChatState(
+          chatGroup: chatGroup,
+          userThisApp: event.userThisApp,
+          userTo: event.userTo);
     }
   }
 
@@ -269,7 +221,7 @@ class ChatGroupScreenBloc
   void _deleteChatGroups(DeleteChatGroups event) {
     WriteBatch fsBatch = Firestore.instance.batch();
 
-    for (var chatGroup in event.chatGroups) {
+    for (ChatGroup chatGroup in event.chatGroups) {
       CollectionReference collectionRef =
           Firestore.instance.collection(MyChatGroupProps.collectionName);
       String documentId = chatGroup.id;

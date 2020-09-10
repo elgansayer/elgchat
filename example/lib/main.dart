@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,13 +8,20 @@ import 'package:elgchat_example/login/login.dart';
 import 'package:elgchat_example/splash_screen.dart';
 import 'package:elgchat_example/simple_bloc_observer.dart';
 
+import 'config.dart';
 import 'home/home_screen.dart';
 
-void main() {
-
-  // firestore.settings(timestampsInSnapshotsEnabled: true);
+Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+
+  // firestore.settings(timestampsInSnapshotsEnabled: true);
+  if (Config.useLocal) {
+    // This will set the app to communicate with localhost
+    await Firestore.instance
+        .settings(host: "192.168.1.86:8080", sslEnabled: false);
+  }
+
   Bloc.observer = SimpleBlocObserver();
   final UserRepository userRepository = UserRepository();
   runApp(RepositoryProvider<UserRepository>(

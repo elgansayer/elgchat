@@ -57,7 +57,7 @@ class ChatGroupTile extends StatelessWidget {
   }
 
   Widget buildDateTime(ChatGroup chatGroup) {
-    DateTime dateTime = chatGroup.created.toUtc();
+    DateTime dateTime = chatGroup.updated.toUtc();
     String dateString = formatDateString(dateTime);
     return Text(dateString, style: TextStyle(color: Colors.grey));
   }

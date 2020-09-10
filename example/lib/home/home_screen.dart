@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../user_repository.dart';
+import 'bloc/chat_groups_repository.dart';
 import 'bloc/home_bloc.dart';
 import 'bloc/messages_bloc.dart';
 import 'chat_list_page.dart';
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     UserRepository userRepository =
         RepositoryProvider.of<UserRepository>(context);
 
@@ -62,10 +64,10 @@ class HomeForm extends StatelessWidget {
               items: [
                 BottomNavigationBarItem(
                   icon: new Icon(Icons.mail),
-                  title: new Text('Messages'),
+                  label: ('Messages'),
                 ),
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.person), title: Text('Profile'))
+                    icon: Icon(Icons.person), label: ('Profile'))
               ],
             ),
           ),

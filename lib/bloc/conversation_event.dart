@@ -94,7 +94,7 @@ class SetChatMessagesEvent<T extends ChatMessage> extends ConversationEvent {
 }
 
 class SetStateEvent extends ConversationEvent {
-  final ConversationState state;
+  final ConversationLogicState state;
   SetStateEvent(this.state);
 }
 

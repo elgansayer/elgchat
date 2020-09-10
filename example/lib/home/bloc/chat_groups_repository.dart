@@ -14,8 +14,9 @@ class ChatGroupsRepository {
 
   Stream<QuerySnapshot> monitor(String userId) {
     final ref = Firestore.instance
-        .collection(MyChatGroupProps.collectionName)
-        .where(ChatGroupProps.userIds, arrayContains: userId)
+        .collection(
+            "${UsersProps.collectionName}/$userId/${MyChatGroupProps.collectionName}")
+        // .where(ChatGroupProps.userIds, arrayContains: userId)
         .orderBy(ChatGroupProps.updated);
 
     return ref.snapshots();

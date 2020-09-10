@@ -358,11 +358,18 @@ class ChatGroupListState extends State<ChatGroupList> {
 
   Widget buildChatGroupAvatar(ChatGroup chatGroup, bool selected) {
     Widget avatar = CircleAvatar(
-      child: chatGroup.imageUrl != null
+      child: chatGroup.photoUrl != null && chatGroup.photoUrl.isNotEmpty
           ? CachedNetworkImage(
-              imageUrl: chatGroup.imageUrl,
+              imageUrl: chatGroup.photoUrl,
               placeholder: (context, url) => CircularProgressIndicator(),
               errorWidget: (context, url, error) => Icon(Icons.error),
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image:
+                      DecorationImage(image: imageProvider, fit: BoxFit.cover),
+                ),
+              ),
             )
           : Container(),
     );

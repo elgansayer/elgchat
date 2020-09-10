@@ -7,7 +7,7 @@ import 'conversation_event.dart';
 
 class ConversationListLogic {
   List<ChatMessage> chatMessages = List<ChatMessage>();
-  ConversationState currentState = ConversationState.loading;
+  ConversationLogicState currentState = ConversationLogicState.loading;
   ChatMessage selectedChatMessage;
   ChatMessage repiyingWithChatMessage;
   bool scrollButtonValue = false;
@@ -116,9 +116,9 @@ class ConversationListLogic {
     return callbackEventController.sink;
   }
 
-  final stateStreamController = StreamController<ConversationState>.broadcast();
-  StreamSink<ConversationState> get stateSink => stateStreamController.sink;
-  Stream<ConversationState> get stateStream => stateStreamController.stream;
+  final stateStreamController = StreamController<ConversationLogicState>.broadcast();
+  StreamSink<ConversationLogicState> get stateSink => stateStreamController.sink;
+  Stream<ConversationLogicState> get stateStream => stateStreamController.stream;
   setStateEvent(SetStateEvent event) {
     stateSink.add(event.state);
   }
@@ -141,9 +141,9 @@ class ConversationListLogic {
 
     chatMessagesStreamController.add(chatMessages);
 
-    if (this.currentState == ConversationState.loading) {
+    if (this.currentState == ConversationLogicState.loading) {
       // dispatch.add(SetStateEvent(ConversationState.list));
-      this.stateSink.add(ConversationState.list);
+      this.stateSink.add(ConversationLogicState.list);
     }
   }
 

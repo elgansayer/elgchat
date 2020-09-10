@@ -54,3 +54,9 @@ class UnarchiveChatGroups extends ChatGroupScreenEvent {
   final List<ChatGroup> chatGroups;
   UnarchiveChatGroups({@required this.chatGroups});
 }
+
+class CreateNewChat extends ChatGroupScreenEvent {
+  final Contact userTo;
+  final Contact userThisApp;
+  CreateNewChat({@required this.userThisApp, @required this.userTo});
+}

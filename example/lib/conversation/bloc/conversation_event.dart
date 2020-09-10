@@ -9,9 +9,19 @@ abstract class ConversationEvent extends Equatable {
 
 class NewMessageEvent extends ConversationEvent {
   final ChatMessage newChatMessage;
-  final String userId;
-  final ChatGroup chatGroup;
-  NewMessageEvent({this.chatGroup, this.newChatMessage, this.userId});
+  final String receiverId;
+  // final ChatGroup chatGroup;
+  NewMessageEvent({this.newChatMessage, this.receiverId});
+}
+
+class ChatMessagesLoaded extends ConversationEvent {
+  final List<ChatMessage> chatMessages;
+  ChatMessagesLoaded({this.chatMessages});
+}
+
+class SubscribeToChatGroupEvent extends ConversationEvent {
+  final String chatGroupId;
+  SubscribeToChatGroupEvent({this.chatGroupId});
 }
 
 class InitConversationEvent extends ConversationEvent {

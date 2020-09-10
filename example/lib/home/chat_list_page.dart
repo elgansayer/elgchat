@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../user_repository.dart';
 import 'bloc/messages_bloc.dart';
+import 'find_user_screen.dart';
 
 class ChatListPage extends StatefulWidget {
   ChatListPage({Key key}) : super(key: key);
@@ -19,14 +20,20 @@ class _ChatListPageState extends State<ChatListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChatGroupScreenBloc, ChatGroupScreenState>(
-        builder: (BuildContext context, ChatGroupScreenState state) {
-      if (state is LoadedChatGroups) {
-        return _buildList(state);
-      }
+    return BlocConsumer<ChatGroupScreenBloc, ChatGroupScreenState>(
+      listener: (BuildContext context, ChatGroupScreenState state) {
+        if (state is OpenChatState) {
+          this._openConversation(state.chatGroup);
+        }
+      },
+      builder: (context, state) {
+        if (state is LoadedChatGroups) {
+          return _buildList(state);
+        }
 
-      return _buildLoading();
-    });
+        return _buildLoading();
+      },
+    );
   }
 
   _buildLoading() {
@@ -38,7 +45,7 @@ class _ChatListPageState extends State<ChatListPage> {
   }
 
   _buildList(LoadedChatGroups state) {
-    final Contact contact = _getContact();
+    final Contact contact = _getAppUserContact();
 
     // Load groups from state and use ref
     List<ChatGroup> chatGroups = state.chatGroups;
@@ -58,7 +65,7 @@ class _ChatListPageState extends State<ChatListPage> {
       //   //   ));
       //   // });
       // }),
-      onTap: (ChatGroup chatGroup) => _onChatGroupTap(context, chatGroup),
+      onTap: _openConversation,
       chatGroups: chatGroups,
       // onLoadChatGroups: onLoadChatGroups,
       // onLoadMoreChatGroups: onLoadMoreChatGroups,
@@ -101,8 +108,8 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  void _onChatGroupTap(BuildContext context, ChatGroup chatGroup) {
-    final Contact contact = _getContact();
+  void _openConversation(ChatGroup chatGroup) {
+    final Contact contact = _getAppUserContact();
 
     BlocProvider.of<ChatGroupScreenBloc>(context)
         .add(MarkRead(userId: contact.id, chatGroups: [chatGroup]));
@@ -110,9 +117,27 @@ class _ChatListPageState extends State<ChatListPage> {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                ConversationViewScreen(chatGroup: chatGroup)));
+            builder: (context) => ConversationViewScreen(
+                contact: contact, chatGroup: chatGroup)));
   }
+
+  // void _openConversation(ChatGroup chatGroup) {
+  //   final Contact contact = _getAppUserContact();
+
+  //   ChatGroupsRepository chatGroupsRepository =
+  //       RepositoryProvider.of<ChatGroupsRepository>(context);
+
+  //   List<MyChatGroup> myChatGroupList = chatGroupsRepository.myChatList;
+
+  //   BlocProvider.of<ChatGroupScreenBloc>(context)
+  //       .add(MarkRead(userId: contact.id, chatGroups: [chatGroup]));
+
+  //   Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //           builder: (context) =>
+  //               ConversationViewScreen(chatGroup: chatGroup)));
+  // }
 
   // Future<List<ChatGroup>> onLoadChatGroups() async {
   //   var allChatGroups = List.generate(numItmes, (i) {
@@ -146,11 +171,18 @@ class _ChatListPageState extends State<ChatListPage> {
   // }
 
   _onFindUserToChatTo(BuildContext context) async {
-    // Contact contactSelected = await Navigator.push(
-    // context, MaterialPageRoute(builder: (context) => FindUserScreen()));
+    Contact contactSelected = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => FindUserScreen()));
+
+    final Contact contact = _getAppUserContact();
+
+    if (contactSelected != null) {
+      BlocProvider.of<ChatGroupScreenBloc>(context)
+          .add(CreateNewChat(userTo: contactSelected, userThisApp: contact));
+    }
   }
 
-  Contact _getContact() {
+  Contact _getAppUserContact() {
     UserRepository userRepository =
         RepositoryProvider.of<UserRepository>(context);
     final FirebaseUser user = userRepository.user;

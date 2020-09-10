@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
-enum ConversationState {
+enum ConversationLogicState {
   loading,
   list,
   selection,
@@ -53,7 +53,7 @@ abstract class ChatGroupProps {
 class ChatGroup extends Equatable {
   final String id;
   final String name;
-  final String imageUrl;
+  final String photoUrl;
   final String lastMessage;
   final String creatorId;
   final DateTime created;
@@ -78,7 +78,7 @@ class ChatGroup extends Equatable {
       this.muted = false,
       this.archived = false,
       // this.selected = false,
-      this.imageUrl,
+      this.photoUrl,
       this.id,
       this.lastMessage,
       this.created,
@@ -108,7 +108,7 @@ class ChatGroup extends Equatable {
       pinned: pinned ?? this.pinned,
       archived: archived ?? this.archived,
       // selected: selected ?? this.selected,
-      imageUrl: imageUrl ?? this.imageUrl,
+      photoUrl: imageUrl ?? this.photoUrl,
       id: id ?? this.id,
       lastMessage: lastMessage ?? this.lastMessage,
       created: date ?? this.created,
@@ -133,11 +133,22 @@ class ChatGroup extends Equatable {
   List<Object> get props => [this.id];
 }
 
+abstract class ChatMessageProps {
+  static const String id = "id";
+  static const String message = "message";
+  static const String created = "created";
+  static const String senderId = "senderId";
+  static const String mediaUrls = "mediaUrls";
+  static const String reactions = "reactions";
+  static const String starred = "starred";
+  static const String deleted = "deleted";
+}
+
 class ChatMessage extends Equatable {
   final String id;
   final String message;
-  final DateTime creationDate;
-  final String userId;
+  final DateTime created;
+  final String senderId;
   final List<String> mediaUrls;
   final List<String> reactions;
   // final bool selected;
@@ -152,16 +163,17 @@ class ChatMessage extends Equatable {
       this.mediaUrls,
       this.id,
       this.message,
-      this.creationDate,
-      this.userId})
-      : assert(id != null),
-        assert(userId != null),
-        assert(message != null);
+      this.created,
+      @required this.senderId})
+      : assert(senderId != null),
+        assert(message != null)
+  // assert(id != null),
+  ;
 
   ChatMessage copyWith({
     String id,
     String message,
-    DateTime creationDate,
+    DateTime created,
     String userId,
     List<String> mediaUrls,
     List<String> reactions,
@@ -176,8 +188,8 @@ class ChatMessage extends Equatable {
       mediaUrls: mediaUrls ?? this.mediaUrls,
       id: id ?? this.id,
       message: message ?? this.message,
-      creationDate: creationDate ?? this.creationDate,
-      userId: userId ?? this.userId,
+      created: created ?? this.created,
+      senderId: userId ?? this.senderId,
       deleted: deleted ?? this.deleted,
     );
   }

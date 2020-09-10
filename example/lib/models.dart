@@ -40,3 +40,31 @@ T getParam<T>(String param, Map data, T defaultValue) {
 
   return ret;
 }
+
+abstract class UsersProps {
+  static const String uid = "uid";
+  static const String collectionName = "users";
+  static const String displayName = "displayName";
+  static const String photoUrl = "photoUrl";
+  static const String lastSignInTime = "lastSignInTime";
+  static const String email = "email";
+}
+
+class User {
+  final String uid;
+  final String email;
+  final String displayName;
+  final String photoUrl;
+  final DateTime lastSignInTime;
+
+  User({this.uid, this.email, this.displayName, this.photoUrl, this.lastSignInTime});
+
+  factory User.fromMap(Map<String, dynamic> data) {
+    return User(
+        uid: data[UsersProps.uid],
+        email: data[UsersProps.email],
+        displayName: data[UsersProps.displayName],
+        photoUrl: data[UsersProps.photoUrl],
+        lastSignInTime: data[UsersProps.lastSignInTime]);
+  }
+}

@@ -33,7 +33,7 @@ class AuthenticationBloc
     final isSignedIn = await _userRepository.isSignedIn();
     if (isSignedIn) {
       final user = await _userRepository.getUser();
-      yield AuthenticationSuccess(user.email);
+      yield AuthenticationSuccess(user.displayName);
     } else {
       yield AuthenticationFailure();
     }

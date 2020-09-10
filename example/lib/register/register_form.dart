@@ -84,7 +84,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
-                    autovalidate: true,
+                    // autovalidate: true,
                     validator: (_) {
                       return !state.isEmailValid ? 'Invalid Email' : null;
                     },
@@ -97,7 +97,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     ),
                     obscureText: true,
                     autocorrect: false,
-                    autovalidate: true,
+                    // autovalidate: true,
                     validator: (_) {
                       return !state.isPasswordValid ? 'Invalid Password' : null;
                     },

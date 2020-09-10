@@ -24,7 +24,9 @@ class ConversationList extends StatefulWidget {
   final List<ChatMessage> chatMessagesRef;
 
   final Contact contact;
-  final VoidCallback onNewChatMessage;
+  final void Function(ChatMessage) onNewChatMessage;
+
+  final String title;
 
   // Any widget to appear above the input area
   final Widget aboveInputArea;
@@ -51,7 +53,8 @@ class ConversationList extends StatefulWidget {
       this.aboveInputArea,
       this.belowInputArea,
       this.trailingInputActions,
-      this.leadingInputActions})
+      this.leadingInputActions,
+      this.title})
       : super(key: key);
 
   @override
@@ -66,6 +69,7 @@ class ConversationList extends StatefulWidget {
 
 class ConversationListState extends State<ConversationList> {
   ScrollController scrollController = new ScrollController();
+  TextEditingController textController = new TextEditingController();
 
   // final ItemScrollController itemScrollController = ItemScrollController();
   // final ItemPositionsListener itemPositionsListener =
@@ -173,7 +177,7 @@ class ConversationListState extends State<ConversationList> {
   }
 
   buildScaffold() {
-    return StreamBuilder<ConversationState>(
+    return StreamBuilder<ConversationLogicState>(
         stream: this.bloc.stateStream,
         builder: (context, snapshot) {
           return Scaffold(
@@ -267,14 +271,14 @@ class ConversationListState extends State<ConversationList> {
     // );
   }
 
-  buildScaffoldAppBar(ConversationState state) {
+  buildScaffoldAppBar(ConversationLogicState state) {
     if (state == null) {
       return AppBar(
-        title: Text('widget.title'),
+        title: Text(widget.title),
       );
     }
 
-    if (state != ConversationState.selection) {
+    if (state != ConversationLogicState.selection) {
       return buildListAppBar();
     }
 
@@ -287,7 +291,7 @@ class ConversationListState extends State<ConversationList> {
       leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            this.bloc.dispatch.add(SetStateEvent(ConversationState.list));
+            this.bloc.dispatch.add(SetStateEvent(ConversationLogicState.list));
           }),
       actions: <Widget>[
         replyButton(),
@@ -386,6 +390,7 @@ class ConversationListState extends State<ConversationList> {
                                       child: Container(
                                         // color: Colors.red,
                                         child: TextField(
+                                          controller: this.textController,
                                           decoration: InputDecoration(
                                             border: InputBorder.none,
                                             contentPadding: EdgeInsets.all(0),
@@ -417,7 +422,7 @@ class ConversationListState extends State<ConversationList> {
                       ),
                       InkWell(
                         onTap: () {
-                          widget.onNewChatMessage();
+                          sendTapped();
                         },
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(3.0, 0, 2.0, 0),
@@ -452,6 +457,26 @@ class ConversationListState extends State<ConversationList> {
             ),
           );
         });
+  }
+
+  void sendTapped() {
+    if (widget.onNewChatMessage != null) {
+      // Must send a new chat message
+      ChatMessage chatMessage = ChatMessage(
+          reactions: [],
+          starred: false,
+          deleted: false,
+          mediaUrls: [],
+          id: null,
+          message: this.textController.text,
+          created: DateTime.now().toUtc(),
+          senderId: this.widget.contact.id
+          );
+
+      widget.onNewChatMessage(chatMessage);
+    }
+
+    this.textController.clear();
   }
 
   Widget getDeletedMessageText(ChatMessage currentChatMsg) {
@@ -548,7 +573,7 @@ class ConversationListState extends State<ConversationList> {
 
   buildListAppBar() {
     return AppBarTextField(
-      title: Text('widget.title'),
+      title: Text(widget.title),
       onChanged: (String phrase) {
         this.bloc.dispatch.add(SetSearchString(phrase));
       },
@@ -583,13 +608,13 @@ class ConversationListState extends State<ConversationList> {
     this.bloc.dispatch.add(MarkSelectedUnreadEvent());
   }
 
-  buildScaffoldBody(ConversationState state) {
+  buildScaffoldBody(ConversationLogicState state) {
     switch (state) {
-      case ConversationState.list:
-      case ConversationState.selection:
+      case ConversationLogicState.list:
+      case ConversationLogicState.selection:
         return buildChatMessageList();
         break;
-      case ConversationState.loading:
+      case ConversationLogicState.loading:
       default:
         return buildLoading();
     }
@@ -604,9 +629,7 @@ class ConversationListState extends State<ConversationList> {
         stream: this.bloc.visibleChatMessagesStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return Container(
-              child: Center(child: Text("No chats found")),
-            );
+            return noChatFound();
           }
 
           List<ChatMessage> visibleChats = snapshot.data;
@@ -693,16 +716,22 @@ class ConversationListState extends State<ConversationList> {
         });
   }
 
+  noChatFound() {
+    return Container(
+      child: Center(),
+    );
+  }
+
   Widget buildChatTitle(ChatMessage currentChatMsg, ChatMessage lastChatMsg,
       ChatMessage nextChatMsg) {
     bool sameLastMsg = currentChatMsg.id == lastChatMsg.id;
 
     bool showNip =
-        !sameLastMsg ? currentChatMsg.userId != lastChatMsg.userId : true;
+        !sameLastMsg ? currentChatMsg.senderId != lastChatMsg.senderId : true;
 
-    bool owner = currentChatMsg.userId == widget.contact.id;
+    bool owner = currentChatMsg.senderId == widget.contact.id;
 
-    bool ownsNextMsg = currentChatMsg.userId == nextChatMsg.userId;
+    bool ownsNextMsg = currentChatMsg.senderId == nextChatMsg.senderId;
     bool sameNextMsg = currentChatMsg.id == nextChatMsg.id;
 
     bool showAvatar = !owner && (!ownsNextMsg || ownsNextMsg && sameNextMsg);
@@ -710,6 +739,7 @@ class ConversationListState extends State<ConversationList> {
 
     return ConvosationBubble(
       chatMessage: currentChatMsg,
+      avatarUrl: this.widget.contact.photoUrl,
       owner: owner,
       radius: radius,
       showAvatar: showAvatar,
