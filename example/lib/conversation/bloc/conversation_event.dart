@@ -9,9 +9,9 @@ abstract class ConversationEvent extends Equatable {
 
 class NewMessageEvent extends ConversationEvent {
   final ChatMessage newChatMessage;
-  final String receiverId;
+  final List<Contact> receivers;
   // final ChatGroup chatGroup;
-  NewMessageEvent({this.newChatMessage, this.receiverId});
+  NewMessageEvent({this.newChatMessage, this.receivers});
 }
 
 class ChatMessagesLoaded extends ConversationEvent {

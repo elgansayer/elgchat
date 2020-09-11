@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../user_repository.dart';
-import 'bloc/messages_bloc.dart';
+import 'bloc/chat_group_bloc.dart';
 import 'find_user_screen.dart';
 
 class ChatListPage extends StatefulWidget {
@@ -23,7 +23,7 @@ class _ChatListPageState extends State<ChatListPage> {
     return BlocConsumer<ChatGroupScreenBloc, ChatGroupScreenState>(
       listener: (BuildContext context, ChatGroupScreenState state) {
         if (state is OpenChatState) {
-          this._openConversation(state.chatGroup);
+          this._openConversation(state.usersTo, state.chatGroup);
         }
       },
       builder: (context, state) {
@@ -45,7 +45,7 @@ class _ChatListPageState extends State<ChatListPage> {
   }
 
   _buildList(LoadedChatGroups state) {
-    final Contact contact = _getAppUserContact();
+    final Contact user = _getAppUserContact();
 
     // Load groups from state and use ref
     List<ChatGroup> chatGroups = state.chatGroups;
@@ -65,7 +65,7 @@ class _ChatListPageState extends State<ChatListPage> {
       //   //   ));
       //   // });
       // }),
-      onTap: _openConversation,
+      onTap: _onTappedChatGroup,
       chatGroups: chatGroups,
       // onLoadChatGroups: onLoadChatGroups,
       // onLoadMoreChatGroups: onLoadMoreChatGroups,
@@ -76,7 +76,7 @@ class _ChatListPageState extends State<ChatListPage> {
           onPressed: () => _onFindUserToChatTo(context),
         )
       ],
-      user: contact,
+      user: user,
       onDeleted: (List<ChatGroup> chatGroups) {
         BlocProvider.of<ChatGroupScreenBloc>(context)
             .add(DeleteChatGroups(chatGroups: chatGroups));
@@ -95,7 +95,7 @@ class _ChatListPageState extends State<ChatListPage> {
       // },
       onMarkedUnread: (List<ChatGroup> chatGroups) {
         BlocProvider.of<ChatGroupScreenBloc>(context)
-            .add(MarkUnread(userId: contact.id, chatGroups: chatGroups));
+            .add(MarkUnread(userId: user.id, chatGroups: chatGroups));
       },
       onArchived: (List<ChatGroup> chatGroups) {
         BlocProvider.of<ChatGroupScreenBloc>(context)
@@ -108,17 +108,28 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  void _openConversation(ChatGroup chatGroup) {
-    final Contact contact = _getAppUserContact();
+  void _onTappedChatGroup(ChatGroup chatGroup) {
+// dasd
+    final Contact appUserContact = _getAppUserContact();
 
     BlocProvider.of<ChatGroupScreenBloc>(context)
-        .add(MarkRead(userId: contact.id, chatGroups: [chatGroup]));
+        .add(OpenChatGroup(chatGroup: chatGroup, appUser: appUserContact));
+  }
+
+  void _openConversation(List<Contact> receivers, ChatGroup chatGroup) {
+    final Contact user = _getAppUserContact();
+
+    BlocProvider.of<ChatGroupScreenBloc>(context)
+        .add(MarkRead(userId: user.id, chatGroups: [chatGroup]));
 
     Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => ConversationViewScreen(
-                contact: contact, chatGroup: chatGroup)));
+                  user: user,
+                  chatGroup: chatGroup,
+                  receivers: receivers,
+                )));
   }
 
   // void _openConversation(ChatGroup chatGroup) {
@@ -174,11 +185,11 @@ class _ChatListPageState extends State<ChatListPage> {
     Contact contactSelected = await Navigator.push(
         context, MaterialPageRoute(builder: (context) => FindUserScreen()));
 
-    final Contact contact = _getAppUserContact();
+    final Contact appUserContact = _getAppUserContact();
 
     if (contactSelected != null) {
-      BlocProvider.of<ChatGroupScreenBloc>(context)
-          .add(CreateNewChat(userTo: contactSelected, userThisApp: contact));
+      BlocProvider.of<ChatGroupScreenBloc>(context).add(CreateNewChat(
+          receiverUser: contactSelected, appUser: appUserContact));
     }
   }
 

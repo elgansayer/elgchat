@@ -15,11 +15,11 @@ class LoadError extends ChatGroupScreenState {}
 
 class OpenChatState extends ChatGroupScreenState {
   final ChatGroup chatGroup;
-  final Contact userTo;
+  final List<Contact> usersTo;
   final Contact userThisApp;
 
   OpenChatState(
       {@required this.chatGroup,
-      @required this.userTo,
+      @required this.usersTo,
       @required this.userThisApp});
 }

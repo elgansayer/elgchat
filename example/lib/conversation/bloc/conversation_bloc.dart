@@ -82,7 +82,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     NewMessage newMessage = NewMessage(
         chatMessage: event.newChatMessage,
         chatGroup: state.chatGroup,
-        receiverIds: [event.receiverId]);
+        receiverIds: event.receivers.map((e) => e.id).toList());
 
     Map<String, String> headers = Map<String, String>();
     headers['Content-Type'] = 'application/json';

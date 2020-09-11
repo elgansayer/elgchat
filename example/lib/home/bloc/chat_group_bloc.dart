@@ -113,6 +113,7 @@ class ChatGroupScreenBloc
       _deleteChatGroups(event);
       return;
     }
+
     if (event is TogglePinned) {
       _togglePinned(event);
       yield state;
@@ -158,6 +159,11 @@ class ChatGroupScreenBloc
       return;
     }
 
+    if (event is OpenChatGroup) {
+      yield* _openChatGroup(event);
+      return;
+    }
+
     if (event is ChatGroupsLoaded) {
       try {
         yield LoadedChatGroups(chatGroups: event.chatGroups);
@@ -167,6 +173,38 @@ class ChatGroupScreenBloc
         yield LoadError();
       }
     }
+  }
+
+  Stream<ChatGroupScreenState> _openChatGroup(OpenChatGroup event) async* {
+    // List<ChatGroup> chatGroupList = this.chatGroupsRepository.chatGroupList;
+    List<MyChatGroup> myChatGroupList = this.chatGroupsRepository.myChatList;
+
+    // String contactToId = event.receiverUser.id;
+    // String userIdThisApp = event.appUser.id;
+
+    // Ignore group chats
+    MyChatGroup foundChatGroup = myChatGroupList
+        .firstWhere((cg) => cg.id == event.chatGroup.id, orElse: () => null);
+
+    // final chatGroup =
+    //     chatGroupList.firstWhere((cg) => cg.id == foundChatGroup.id);
+    // _markRead(MarkRead(chatGroups: [chatGroup], userId: userIdThisApp));
+
+    List<Contact> receivers = foundChatGroup.receiverIds.map((receiverId) {
+      return Contact(
+          id: receiverId,
+          username: "err",
+          photoUrl: "",
+          // lastOnline:
+          isActive: false);
+    }).toList();
+
+// Contact contact = Contact(id: )
+
+    yield OpenChatState(
+        chatGroup: event.chatGroup,
+        userThisApp: event.appUser,
+        usersTo: receivers);
   }
 
   Stream<ChatGroupScreenState> _openNewChat(CreateNewChat event) async* {
@@ -195,7 +233,7 @@ class ChatGroupScreenBloc
       yield OpenChatState(
           chatGroup: newChatGroup,
           userThisApp: event.appUser,
-          userTo: event.receiverUser);
+          usersTo: [event.receiverUser]);
     } else {
       final chatGroup =
           chatGroupList.firstWhere((cg) => cg.id == foundChatGroup.id);
@@ -204,7 +242,7 @@ class ChatGroupScreenBloc
       yield OpenChatState(
           chatGroup: chatGroup,
           userThisApp: event.appUser,
-          userTo: event.receiverUser);
+          usersTo: [event.receiverUser]);
     }
   }
 

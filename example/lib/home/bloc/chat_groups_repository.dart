@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:elgchat/models.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../models.dart';
-import 'messages_bloc.dart';
+import 'chat_group_bloc.dart';
 
 class ChatGroupsRepository {
   List<ChatGroup> chatGroupList = List<ChatGroup>();
@@ -49,39 +49,41 @@ class ChatGroupsRepository {
     return this.chatList;
   }
 
-  bool isRead(String userId, String creatorId, List<String> readBy) {
-    if (userId.compareTo(creatorId) == 0) {
-      return true;
-    }
+  // bool isRead(String userId, String creatorId, List<String> readBy) {
+  //   if (userId.compareTo(creatorId) == 0) {
+  //     return true;
+  //   }
 
-    return readBy.contains(userId);
-  }
+  //   return readBy.contains(userId);
+  // }
 
   MyChatGroup _buildChatGroupFromDoc(String userId, DocumentSnapshot doc) {
     Map data = doc.data;
 
-    List<String> readBy = getStrListParam<List<String>>(
-        ChatGroupProps.readBy, data, new List<String>());
+    // List<String> readBy = getStrListParam<List<String>>(
+    //     ChatGroupProps.readBy, data, new List<String>());
 
     String creatorId = getParam<String>(ChatGroupProps.creatorId, data, '');
-    bool read = isRead(userId, creatorId, readBy);
+    // bool read = isRead(userId, creatorId, readBy);
 
     return MyChatGroup(
-        id: doc.documentID,
-        muted: getParam<bool>(ChatGroupProps.muted, data, false),
-        pinned: getParam<bool>(ChatGroupProps.pinned, data, false),
-        archived: getParam<bool>(ChatGroupProps.archived, data, false),
-        selected: false,
-        photoUrl: getParam<String>(ChatGroupProps.photoUrl, data, ''),
-        lastMessage: getParam<String>(ChatGroupProps.lastMessage, data, ''),
-        created: getTimeFromMap(ChatGroupProps.created, data),
-        name: getParam<String>(ChatGroupProps.name, data, ''),
-        creatorId: creatorId,
-        updated: getTimeFromMap(ChatGroupProps.updated, data),
-        read: read,
-        userIds: getStrListParam<List<String>>(
-            ChatGroupProps.userIds, data, new List<String>()),
-        readBy: readBy);
+      id: doc.documentID,
+      muted: getParam<bool>(ChatGroupProps.muted, data, false),
+      pinned: getParam<bool>(ChatGroupProps.pinned, data, false),
+      archived: getParam<bool>(ChatGroupProps.archived, data, false),
+      selected: false,
+      photoUrl: getParam<String>(ChatGroupProps.photoUrl, data, ''),
+      lastMessage: getParam<String>(ChatGroupProps.lastMessage, data, ''),
+      created: getTimeFromMap(ChatGroupProps.created, data),
+      name: getParam<String>(ChatGroupProps.name, data, ''),
+      creatorId: creatorId,
+      updated: getTimeFromMap(ChatGroupProps.updated, data),
+      // read: read,
+      read: getParam<bool>(ChatGroupProps.read, data, false),
+      receiverIds: getStrListParam<List<String>>(
+          ChatGroupProps.receiverIds, data, new List<String>()),
+      // readBy: readBy
+    );
   }
 
   void updateChatGroups(List<ChatGroupUpdateData> allUpdateData) {

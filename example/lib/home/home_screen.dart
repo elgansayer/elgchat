@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../user_repository.dart';
 import 'bloc/chat_groups_repository.dart';
 import 'bloc/home_bloc.dart';
-import 'bloc/messages_bloc.dart';
+import 'bloc/chat_group_bloc.dart';
 import 'chat_list_page.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     UserRepository userRepository =
         RepositoryProvider.of<UserRepository>(context);
 
@@ -37,7 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return MultiBlocProvider(providers: [
       BlocProvider<ChatGroupScreenBloc>(
-          create: (context) => ChatGroupScreenBloc(_chatGroupsRepository, _homeBloc)
+          create: (context) => ChatGroupScreenBloc(
+              _chatGroupsRepository, userRepository, _homeBloc)
             ..add(LoadChatGroups(userId: user.uid))),
       BlocProvider<ProfileBloc>(create: (context) => ProfileBloc()),
       BlocProvider<HomeBloc>(create: (context) => _homeBloc)

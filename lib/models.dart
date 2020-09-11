@@ -40,8 +40,9 @@ abstract class ChatGroupProps {
   static const String created = "created";
   static const String updated = "updated";
 
-  static const String readBy = "readBy";
-  static const String userIds = "userIds";
+  // static const String readBy = "readBy";
+  static const String read = "read";
+  static const String receiverIds = "receiverIds";
   static const String creatorId = "creatorId";
 
   // static const String selected = "selected";

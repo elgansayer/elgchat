@@ -23,7 +23,7 @@ class ConversationList extends StatefulWidget {
   final List<ChatMessage> chatMessages;
   final List<ChatMessage> chatMessagesRef;
 
-  final Contact contact;
+  final Contact user;
   final void Function(ChatMessage) onNewChatMessage;
 
   final String title;
@@ -46,7 +46,7 @@ class ConversationList extends StatefulWidget {
       this.logicCreator,
       this.trailingActions,
       this.leadingActions,
-      this.contact,
+      this.user,
       this.chatMessages = const [],
       this.chatMessagesRef,
       this.onNewChatMessage,
@@ -470,7 +470,7 @@ class ConversationListState extends State<ConversationList> {
           id: null,
           message: this.textController.text,
           created: DateTime.now().toUtc(),
-          senderId: this.widget.contact.id
+          senderId: this.widget.user.id
           );
 
       widget.onNewChatMessage(chatMessage);
@@ -729,7 +729,7 @@ class ConversationListState extends State<ConversationList> {
     bool showNip =
         !sameLastMsg ? currentChatMsg.senderId != lastChatMsg.senderId : true;
 
-    bool owner = currentChatMsg.senderId == widget.contact.id;
+    bool owner = currentChatMsg.senderId == widget.user.id;
 
     bool ownsNextMsg = currentChatMsg.senderId == nextChatMsg.senderId;
     bool sameNextMsg = currentChatMsg.id == nextChatMsg.id;
@@ -739,14 +739,14 @@ class ConversationListState extends State<ConversationList> {
 
     return ConvosationBubble(
       chatMessage: currentChatMsg,
-      avatarUrl: this.widget.contact.photoUrl,
+      avatarUrl: this.widget.user.photoUrl,
       owner: owner,
       radius: radius,
       showAvatar: showAvatar,
       showNip: showNip,
       onGotReaction: (String code) {
         this.bloc.dispatch.add(ToggleReactedEvent(
-            chatMessage: currentChatMsg, uCode: code, contact: widget.contact));
+            chatMessage: currentChatMsg, uCode: code, contact: widget.user));
       },
       onLongPress: () {
         this.bloc.dispatch.add(ToggleSelectedEvent(currentChatMsg));

@@ -91,29 +91,28 @@ class NewMessage {
 export async function newMessage(request: any, response: any) {
 
     const newMessage: NewMessage = request.body as NewMessage;
+    if (newMessage == undefined) {
+        response.end('New message is undefined');
+    }
 
-    // Get a new chat group
-    const newChatGroup: ChatGroup = await getChatGroup(newMessage);
+    // Insert receiver chat group
+    for (const receiverId of newMessage.chatGroup.receiverIds) {
+        // Get a new chat group each time so we can
+        // safely delete history per user
+        const newChatGroup: ChatGroup = await getChatGroup(newMessage, receiverId);
+        await insertChatGroup(newMessage.chatMessage, newChatGroup, receiverId);
+    }
 
-    const chatGroupPath: string = `${USERS}/${newMessage.chatMessage.senderId}/${CHAT_GROUPS}`;
-    const chatGroupCollection = admin.firestore().collection(chatGroupPath);
-    const chatMessageDocument = chatGroupCollection.doc(newChatGroup.id);
-    await chatMessageDocument.set({
-        ...newChatGroup
-    });
+    // Insert sender chat group
+    // sender has already read the chat
+    // Get a new chat group each time so we can
+    // safely delete history per user
+    const senderId: String = newMessage.chatMessage.senderId;
+    const newChatGroup: ChatGroup = await getChatGroup(newMessage, senderId);
+    await insertChatGroup(newMessage.chatMessage, newChatGroup, newMessage.chatMessage.senderId, true);
 
-    const messagePath: string = CHAT_MESSAGES;
-    const chatMessagesGroupCollection = admin.firestore().collection(messagePath);
-    const chatMessagesDocument = chatMessagesGroupCollection.doc();
-    await chatMessagesDocument.set({
-        ...newMessage.chatMessage,
-        groupIds: [newChatGroup.id],
-        created: new Date(),
-        mediaUrls: [],
-        reactions: [],
-        starred: false,
-        deleted: false
-    });
+    // Insert chat message
+    await insertChatMessage(newMessage.chatMessage, newChatGroup);
 
     // Return the chat group id
     const feedBackJson = JSON.stringify({
@@ -123,6 +122,30 @@ export async function newMessage(request: any, response: any) {
     response.end(feedBackJson);
 }
 
+function insertChatGroup(chatMessage: ChatMessage, newChatGroup: ChatGroup, userId: String, forceRead: boolean = false): Promise<FirebaseFirestore.WriteResult> {
+    const chatGroupPath: string = `${USERS}/${userId}/${CHAT_GROUPS}`;
+    const chatGroupCollection = admin.firestore().collection(chatGroupPath);
+    const chatMessageDocument = chatGroupCollection.doc(newChatGroup.id);
+    return chatMessageDocument.set({
+        ...newChatGroup,
+        read: userId === chatMessage.senderId || forceRead,
+    });
+}
+
+function insertChatMessage(chatMessage: ChatMessage, newChatGroup: ChatGroup): Promise<FirebaseFirestore.WriteResult> {
+    const messagePath: string = CHAT_MESSAGES;
+    const chatMessagesGroupCollection = admin.firestore().collection(messagePath);
+    const chatMessagesDocument = chatMessagesGroupCollection.doc();
+    return chatMessagesDocument.set({
+        ...chatMessage,
+        groupIds: [newChatGroup.id],
+        created: new Date(),
+        mediaUrls: [],
+        reactions: [],
+        starred: false,
+        deleted: false
+    });
+}
 
 // // Firestore data converter
 // var chatGroupConverter = {
@@ -136,10 +159,10 @@ export async function newMessage(request: any, response: any) {
 // }
 
 //: Promise<ChatGroup>
-async function getChatGroup(newMessage: NewMessage): Promise<ChatGroup> {
+async function getChatGroup(newMessage: NewMessage, userId: String): Promise<ChatGroup> {
 
     const groupId = newMessage.chatGroup.id;
-    const chatGroupPath: string = `${USERS}/${newMessage.chatMessage.senderId}/${CHAT_GROUPS}`;
+    const chatGroupPath: string = `${USERS}/${userId}/${CHAT_GROUPS}`;
 
     const chatGroupCollection = admin.firestore().collection(chatGroupPath);
     const document = chatGroupCollection.doc(groupId);

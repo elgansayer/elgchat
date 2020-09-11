@@ -60,3 +60,8 @@ class CreateNewChat extends ChatGroupScreenEvent {
   final Contact appUser;
   CreateNewChat({@required this.appUser, @required this.receiverUser});
 }
+class OpenChatGroup extends ChatGroupScreenEvent {
+  final ChatGroup chatGroup;
+  final Contact appUser;
+  OpenChatGroup({@required this.appUser, @required this.chatGroup});
+}
