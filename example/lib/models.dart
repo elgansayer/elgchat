@@ -68,3 +68,7 @@ class User {
         lastSignInTime: data[UsersProps.lastSignInTime]);
   }
 }
+
+// class MyMessage{
+//   flagged
+// }

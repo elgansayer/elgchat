@@ -2,9 +2,9 @@ import '../models.dart';
 
 abstract class ChatListEvent {}
 
-class ToggleSelectedEvent<T extends ChatGroup> extends ChatListEvent {
-  final T chatGroup;
-  ToggleSelectedEvent(this.chatGroup);
+class ToggleSelectedEvent<T extends ElgChatRoom> extends ChatListEvent {
+  final T chatRoom;
+  ToggleSelectedEvent(this.chatRoom);
 }
 
 class SetSearchString extends ChatListEvent {
@@ -16,20 +16,20 @@ class ClearSearchString extends ChatListEvent {
   ClearSearchString();
 }
 
-// class SetVisibleChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
-//   final List<T> chatGroups;
-//   SetVisibleChatGroupsEvent(this.chatGroups);
+// class SetVisibleChatRoomsEvent<T extends ChatRoom> extends ChatListEvent {
+//   final List<T> chatRooms;
+//   SetVisibleChatRoomsEvent(this.chatRooms);
 // }
 
-class AddChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
-  final List<T> chatGroups;
-  AddChatGroupsEvent(this.chatGroups);
+class AddChatRoomsEvent<T extends ElgChatRoom> extends ChatListEvent {
+  final List<T> chatRooms;
+  AddChatRoomsEvent(this.chatRooms);
 }
 
-class SetChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
-  // final List<T> chatGroupsRef;
-  final List<T> chatGroups;
-  SetChatGroupsEvent(this.chatGroups);
+class SetChatRoomsEvent<T extends ElgChatRoom> extends ChatListEvent {
+  // final List<T> chatRoomsRef;
+  final List<T> chatRooms;
+  SetChatRoomsEvent(this.chatRooms);
 }
 
 class SetStateEvent extends ChatListEvent {
@@ -38,52 +38,52 @@ class SetStateEvent extends ChatListEvent {
 }
 
 class DeleteSelectedEvent extends ChatListEvent {
-  final List<ChatGroup> chatGroups;
-  DeleteSelectedEvent(this.chatGroups);
+  final List<ElgChatRoom> chatRooms;
+  DeleteSelectedEvent(this.chatRooms);
 }
 
 class MuteSelectedEvent extends ChatListEvent {
-  final List<ChatGroup> chatGroups;
-  MuteSelectedEvent(this.chatGroups);
+  final List<ElgChatRoom> chatRooms;
+  MuteSelectedEvent(this.chatRooms);
 }
 
 class UnarchiveSelectedEvent extends ChatListEvent {
-  final List<ChatGroup> chatGroups;
-  UnarchiveSelectedEvent(this.chatGroups);
+  final List<ElgChatRoom> chatRooms;
+  UnarchiveSelectedEvent(this.chatRooms);
 }
 
 class ArchiveSelectedEvent extends ChatListEvent {
-  final List<ChatGroup> chatGroups;
-  ArchiveSelectedEvent(this.chatGroups);
+  final List<ElgChatRoom> chatRooms;
+  ArchiveSelectedEvent(this.chatRooms);
 }
 
 class MarkSelectedUnreadEvent extends ChatListEvent {
-  final List<ChatGroup> chatGroups;
-  MarkSelectedUnreadEvent(this.chatGroups);
+  final List<ElgChatRoom> chatRooms;
+  MarkSelectedUnreadEvent(this.chatRooms);
 }
 
 class PinSelectedEvent extends ChatListEvent {
-  final List<ChatGroup> chatGroups;
-  PinSelectedEvent(this.chatGroups);
+  final List<ElgChatRoom> chatRooms;
+  PinSelectedEvent(this.chatRooms);
 }
 
 class SelectAllEvent extends ChatListEvent {
   SelectAllEvent();
 }
 
-// class SetArchivedChatGroupsEvent<T extends ChatGroup> extends ChatListEvent {
-//   final List<T> chatGroups;
-//   SetArchivedChatGroupsEvent(this.chatGroups);
+// class SetArchivedChatRoomsEvent<T extends ChatRoom> extends ChatListEvent {
+//   final List<T> chatRooms;
+//   SetArchivedChatRoomsEvent(this.chatRooms);
 // }
 
-// class UnArchivedEvent<T extends ChatGroup> extends ChatListEvent {
-//   final List<T> chatGroups;
-//   UnArchivedEvent(this.chatGroups);
+// class UnArchivedEvent<T extends ChatRoom> extends ChatListEvent {
+//   final List<T> chatRooms;
+//   UnArchivedEvent(this.chatRooms);
 // }
 
-// class DeletedArchivedEvent<T extends ChatGroup> extends ChatListEvent {
-//   final List<T> chatGroups;
-//   DeletedArchivedEvent(this.chatGroups);
+// class DeletedArchivedEvent<T extends ChatRoom> extends ChatListEvent {
+//   final List<T> chatRooms;
+//   DeletedArchivedEvent(this.chatRooms);
 // }
 
 // class ViewArchivedEvent extends ChatListEvent {

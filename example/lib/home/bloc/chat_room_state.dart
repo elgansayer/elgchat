@@ -6,7 +6,7 @@ abstract class ChatRoomScreenState {}
 class MessagesInitial extends ChatRoomScreenState {}
 
 class LoadedChatRooms extends ChatRoomScreenState {
-  final List<ChatRoom> chatRooms;
+  final List<ElgChatRoom> chatRooms;
 
   LoadedChatRooms({@required this.chatRooms});
 }
@@ -14,9 +14,9 @@ class LoadedChatRooms extends ChatRoomScreenState {
 class LoadError extends ChatRoomScreenState {}
 
 class OpenChatState extends ChatRoomScreenState {
-  final ChatRoom chatRoom;
-  final List<Contact> usersTo;
-  final Contact userThisApp;
+  final ElgChatRoom chatRoom;
+  final List<ElgContact> usersTo;
+  final ElgContact userThisApp;
 
   OpenChatState(
       {@required this.chatRoom,

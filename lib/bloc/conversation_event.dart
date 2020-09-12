@@ -9,43 +9,43 @@ class ShowToastCallbackEvent extends ConversationCallbackEvent {
   ShowToastCallbackEvent(this.message);
 }
 
-class UnarchivedCallbackEvent<T extends ChatMessage>
+class UnarchivedCallbackEvent<T extends ElgChatMessage>
     extends ConversationCallbackEvent {
   final List<T> chatMessages;
   UnarchivedCallbackEvent(this.chatMessages);
 }
 
-class DeletedCallbackEvent<T extends ChatMessage>
+class DeletedCallbackEvent<T extends ElgChatMessage>
     extends ConversationCallbackEvent {
   final List<T> chatMessages;
   DeletedCallbackEvent(this.chatMessages);
 }
 
-class ToggleMutedCallbackEvent<T extends ChatMessage>
+class ToggleMutedCallbackEvent<T extends ElgChatMessage>
     extends ConversationCallbackEvent {
   final List<T> chatMessages;
   ToggleMutedCallbackEvent(this.chatMessages);
 }
 
-class TogglePinnedCallbackEvent<T extends ChatMessage>
+class TogglePinnedCallbackEvent<T extends ElgChatMessage>
     extends ConversationCallbackEvent {
   final List<T> chatMessages;
   TogglePinnedCallbackEvent(this.chatMessages);
 }
 
-class MarkedSeenCallbackEvent<T extends ChatMessage>
+class MarkedSeenCallbackEvent<T extends ElgChatMessage>
     extends ConversationCallbackEvent {
   final List<T> chatMessages;
   MarkedSeenCallbackEvent(this.chatMessages);
 }
 
-class ArchivedCallbackEvent<T extends ChatMessage>
+class ArchivedCallbackEvent<T extends ElgChatMessage>
     extends ConversationCallbackEvent {
   final List<T> chatMessages;
   ArchivedCallbackEvent(this.chatMessages);
 }
 
-class ChatMessageTappedCallbackEvent<T extends ChatMessage>
+class ChatMessageTappedCallbackEvent<T extends ElgChatMessage>
     extends ConversationCallbackEvent {
   final T chatMessage;
   ChatMessageTappedCallbackEvent(this.chatMessage);
@@ -54,14 +54,14 @@ class ChatMessageTappedCallbackEvent<T extends ChatMessage>
 abstract class ConversationEvent {}
 
 class ToggleSelectedEvent extends ConversationEvent {
-  final ChatMessage chatMessage;
+  final ElgChatMessage chatMessage;
   ToggleSelectedEvent(this.chatMessage);
 }
 
 class ToggleReactedEvent extends ConversationEvent {
-  final ChatMessage chatMessage;
+  final ElgChatMessage chatMessage;
   final String uCode;
-  final Contact contact;
+  final ElgContact contact;
   ToggleReactedEvent(
       {@required this.chatMessage,
       @required this.uCode,
@@ -82,12 +82,12 @@ class ClearSearchString extends ConversationEvent {
 //   SetVisibleChatMessagesEvent(this.chatMessages);
 // }
 
-class AddChatMessagesEvent<T extends ChatMessage> extends ConversationEvent {
+class AddChatMessagesEvent<T extends ElgChatMessage> extends ConversationEvent {
   final List<T> chatMessages;
   AddChatMessagesEvent(this.chatMessages);
 }
 
-class SetChatMessagesEvent<T extends ChatMessage> extends ConversationEvent {
+class SetChatMessagesEvent<T extends ElgChatMessage> extends ConversationEvent {
   final List<T> chatMessages;
   final List<T> chatMessagesRef;
   SetChatMessagesEvent(this.chatMessages, this.chatMessagesRef);
@@ -126,18 +126,18 @@ class SelectAllEvent extends ConversationEvent {
   SelectAllEvent();
 }
 
-class SetArchivedChatMessagesEvent<T extends ChatMessage>
+class SetArchivedChatMessagesEvent<T extends ElgChatMessage>
     extends ConversationEvent {
   final List<T> chatMessages;
   SetArchivedChatMessagesEvent(this.chatMessages);
 }
 
-class UnArchivedEvent<T extends ChatMessage> extends ConversationEvent {
+class UnArchivedEvent<T extends ElgChatMessage> extends ConversationEvent {
   final List<T> chatMessages;
   UnArchivedEvent(this.chatMessages);
 }
 
-class DeletedArchivedEvent<T extends ChatMessage> extends ConversationEvent {
+class DeletedArchivedEvent<T extends ElgChatMessage> extends ConversationEvent {
   final List<T> chatMessages;
   DeletedArchivedEvent(this.chatMessages);
 }

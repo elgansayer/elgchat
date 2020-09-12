@@ -11,20 +11,20 @@ import 'bubble.dart';
 // import 'emoji_keyboard.dart';
 import 'models.dart';
 
-typedef LoadChatMessagesCallback = Future<List<ChatMessage>> Function();
-typedef LoadMoreChatMessagesCallback = Future<List<ChatMessage>> Function();
+typedef LoadChatMessagesCallback = Future<List<ElgChatMessage>> Function();
+typedef LoadMoreChatMessagesCallback = Future<List<ElgChatMessage>> Function();
 
-class ConversationList extends StatefulWidget {
-  final ConversationListState Function() stateCreator;
+class ElgConversationList extends StatefulWidget {
+  final ElgConversationListState Function() stateCreator;
   final ConversationListLogic Function() logicCreator;
 
   final List<Widget> trailingActions;
   final List<Widget> leadingActions;
-  final List<ChatMessage> chatMessages;
-  final List<ChatMessage> chatMessagesRef;
+  final List<ElgChatMessage> chatMessages;
+  final List<ElgChatMessage> chatMessagesRef;
 
-  final Contact user;
-  final void Function(ChatMessage) onNewChatMessage;
+  final ElgContact user;
+  final void Function(ElgChatMessage) onNewChatMessage;
 
   final String title;
 
@@ -40,7 +40,7 @@ class ConversationList extends StatefulWidget {
   // for example an emoji button
   final List<Widget> leadingInputActions;
 
-  ConversationList(
+  ElgConversationList(
       {Key key,
       this.stateCreator,
       this.logicCreator,
@@ -58,16 +58,16 @@ class ConversationList extends StatefulWidget {
       : super(key: key);
 
   @override
-  ConversationListState createState() {
+  ElgConversationListState createState() {
     if (stateCreator == null) {
-      return ConversationListState();
+      return ElgConversationListState();
     } else {
       return this.stateCreator();
     }
   }
 }
 
-class ConversationListState extends State<ConversationList> {
+class ElgConversationListState extends State<ElgConversationList> {
   ScrollController scrollController = new ScrollController();
   TextEditingController textController = new TextEditingController();
 
@@ -81,8 +81,8 @@ class ConversationListState extends State<ConversationList> {
   // bool needScroll = true;
   // bool _showScrollToBottom = true;
 
-  static ConversationListState creator() {
-    return new ConversationListState();
+  static ElgConversationListState creator() {
+    return new ElgConversationListState();
   }
 
   @override
@@ -252,7 +252,7 @@ class ConversationListState extends State<ConversationList> {
       });
     });
 
-    List<ChatMessage> msgs = widget.chatMessages != null
+    List<ElgChatMessage> msgs = widget.chatMessages != null
         ? widget.chatMessages
         : widget.chatMessagesRef;
     if (msgs == null || msgs.length <= 0) {
@@ -303,7 +303,7 @@ class ConversationListState extends State<ConversationList> {
   }
 
   Widget buildBottomBar() {
-    return StreamBuilder<ChatMessage>(
+    return StreamBuilder<ElgChatMessage>(
         stream: bloc.replyingWithChatMsgStream,
         builder: (context, snapshot) {
           return Container(
@@ -462,7 +462,7 @@ class ConversationListState extends State<ConversationList> {
   void sendTapped() {
     if (widget.onNewChatMessage != null) {
       // Must send a new chat message
-      ChatMessage chatMessage = ChatMessage(
+      ElgChatMessage chatMessage = ElgChatMessage(
           reactions: [],
           starred: false,
           deleted: false,
@@ -479,16 +479,16 @@ class ConversationListState extends State<ConversationList> {
     this.textController.clear();
   }
 
-  Widget getDeletedMessageText(ChatMessage currentChatMsg) {
+  Widget getDeletedMessageText(ElgChatMessage currentChatMsg) {
     return Text('User deleted their message',
         style: TextStyle(fontStyle: FontStyle.italic));
   }
 
-  Widget getMessageText(ChatMessage currentChatMsg) {
+  Widget getMessageText(ElgChatMessage currentChatMsg) {
     return Text(currentChatMsg?.message ?? '');
   }
 
-  getQuote(ChatMessage chatMessage) {
+  getQuote(ElgChatMessage chatMessage) {
     if (chatMessage == null) {
       return Container();
     }
@@ -625,14 +625,14 @@ class ConversationListState extends State<ConversationList> {
   }
 
   buildChatMessageList() {
-    return StreamBuilder<List<ChatMessage>>(
+    return StreamBuilder<List<ElgChatMessage>>(
         stream: this.bloc.visibleChatMessagesStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return noChatFound();
           }
 
-          List<ChatMessage> visibleChats = snapshot.data;
+          List<ElgChatMessage> visibleChats = snapshot.data;
           // List<ChatMessage> visibleChats = widget.chatMessages;
 
           // double pixelRatio = MediaQuery.of(context).devicePixelRatio;
@@ -676,10 +676,10 @@ class ConversationListState extends State<ConversationList> {
                     padding: EdgeInsets.all(8.0),
                     itemCount: visibleChats.length,
                     itemBuilder: (BuildContext context, int i) {
-                      ChatMessage lastChatMsg =
+                      ElgChatMessage lastChatMsg =
                           visibleChats.elementAt(max(i - 1, 0));
-                      ChatMessage currentChatMsg = visibleChats.elementAt(i);
-                      ChatMessage nextChatMsg = visibleChats
+                      ElgChatMessage currentChatMsg = visibleChats.elementAt(i);
+                      ElgChatMessage nextChatMsg = visibleChats
                           .elementAt(min(i + 1, visibleChats.length - 1));
 
                       return buildChatTitle(
@@ -722,8 +722,8 @@ class ConversationListState extends State<ConversationList> {
     );
   }
 
-  Widget buildChatTitle(ChatMessage currentChatMsg, ChatMessage lastChatMsg,
-      ChatMessage nextChatMsg) {
+  Widget buildChatTitle(ElgChatMessage currentChatMsg, ElgChatMessage lastChatMsg,
+      ElgChatMessage nextChatMsg) {
     bool sameLastMsg = currentChatMsg.id == lastChatMsg.id;
 
     bool showNip =

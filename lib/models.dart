@@ -13,14 +13,14 @@ enum ChatListState {
   selection,
 }
 
-class Contact extends Equatable {
+class ElgContact extends Equatable {
   final String id;
   final String username;
   final String photoUrl;
   final DateTime lastOnline;
   final bool isActive;
 
-  Contact(
+  ElgContact(
       {@required this.id,
       this.username,
       this.photoUrl,
@@ -32,7 +32,7 @@ class Contact extends Equatable {
   List<Object> get props => [this.id];
 }
 
-abstract class ChatGroupProps {
+abstract class ChatRoomProps {
   static const String id = "id";
   static const String name = "name";
   static const String photoUrl = "photoUrl";
@@ -51,7 +51,7 @@ abstract class ChatGroupProps {
   static const String pinned = "pinned";
 }
 
-class ChatGroup extends Equatable {
+class ElgChatRoom extends Equatable {
   final String id;
   final String name;
   final String photoUrl;
@@ -70,7 +70,7 @@ class ChatGroup extends Equatable {
   final bool pinned;
   final bool read;
 
-  ChatGroup(
+  ElgChatRoom(
       {this.read = false,
       this.creatorId,
       this.updated,
@@ -88,7 +88,7 @@ class ChatGroup extends Equatable {
       : assert(id != null),
         assert(name != null);
 
-  ChatGroup copyWith({
+  ElgChatRoom copyWith({
     String id,
     String name,
     String lastMessage,
@@ -104,7 +104,7 @@ class ChatGroup extends Equatable {
     // List<String> seenBy,
     // List<String> userIds
   }) {
-    return ChatGroup(
+    return ElgChatRoom(
       muted: muted ?? this.muted,
       pinned: pinned ?? this.pinned,
       archived: archived ?? this.archived,
@@ -145,7 +145,7 @@ abstract class ChatMessageProps {
   static const String deleted = "deleted";
 }
 
-class ChatMessage extends Equatable {
+class ElgChatMessage extends Equatable {
   final String id;
   final String message;
   final DateTime created;
@@ -156,7 +156,7 @@ class ChatMessage extends Equatable {
   final bool starred;
   final bool deleted;
 
-  ChatMessage(
+  ElgChatMessage(
       {this.reactions,
       // this.selected = false,
       this.starred = false,
@@ -171,7 +171,7 @@ class ChatMessage extends Equatable {
   // assert(id != null),
   ;
 
-  ChatMessage copyWith({
+  ElgChatMessage copyWith({
     String id,
     String message,
     DateTime created,
@@ -182,7 +182,7 @@ class ChatMessage extends Equatable {
     bool starred,
     bool deleted,
   }) {
-    return ChatMessage(
+    return ElgChatMessage(
       reactions: reactions ?? this.reactions,
       // selected: selected ?? this.selected,
       starred: starred ?? this.starred,

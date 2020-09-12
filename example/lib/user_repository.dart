@@ -76,8 +76,8 @@ class UserRepository {
     usersRef.document(currentUser.uid).setData({
       UsersProps.uid: currentUser.uid,
       UsersProps.email: currentUser.email,
-      UsersProps.displayName: currentUser.displayName,
-      UsersProps.photoUrl: currentUser.photoUrl,
+      UsersProps.displayName: currentUser.displayName ?? currentUser.email,
+      UsersProps.photoUrl: currentUser.photoUrl ?? 'https://picsum.photos/200/200',
       UsersProps.lastSignInTime: DateTime.now().toUtc(),
     });
   }

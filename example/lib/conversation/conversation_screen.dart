@@ -6,9 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/conversation_bloc.dart';
 
 // class ConversationViewScreen extends StatelessWidget {
-//   const ConversationViewScreen({Key key, @required this.chatGroup})
+//   const ConversationViewScreen({Key key, @required this.chatRoom})
 //       : super(key: key);
-//   final ChatGroup chatGroup;
+//   final ChatRoom chatRoom;
 //   // final Contact contact;
 
 //   @override
@@ -32,15 +32,15 @@ import 'bloc/conversation_bloc.dart';
 
 class ConversationViewScreen extends StatefulWidget {
   // User of the app
-  final Contact user;
+  final ElgContact user;
   // The elg chat information
-  final ChatGroup chatGroup;
+  final ElgChatRoom chatRoom;
   // Users in the chat
-  final List<Contact> receivers;
+  final List<ElgContact> receivers;
 
   ConversationViewScreen(
       {Key key,
-      @required this.chatGroup,
+      @required this.chatRoom,
       @required this.user,
       @required this.receivers})
       : super(key: key);
@@ -50,7 +50,7 @@ class ConversationViewScreen extends StatefulWidget {
 }
 
 class _ConversationViewScreenState extends State<ConversationViewScreen> {
-  List<ChatMessage> chatMessages = new List<ChatMessage>();
+  List<ElgChatMessage> chatMessages = new List<ElgChatMessage>();
 
   @override
   Widget build(BuildContext context) {
@@ -58,14 +58,14 @@ class _ConversationViewScreenState extends State<ConversationViewScreen> {
       create: (context) {
         return ConversationBloc()
           ..add(InitConversationEvent(
-              chatGroup: this.widget.chatGroup, userId: this.widget.user.id));
+              chatRoom: this.widget.chatRoom, userId: this.widget.user.id));
       },
       child: ConversationViewForm(
         chatMessages: chatMessages,
         user: this.widget.user,
         receivers: this.widget.receivers,
-        // chatGroup: this.widget.chatGroup,
-        title: this.widget.chatGroup.name,
+        // chatRoom: this.widget.chatRoom,
+        title: this.widget.chatRoom.name,
       ),
     );
   }
@@ -89,36 +89,36 @@ class ConversationViewForm extends StatelessWidget {
       {Key key,
       @required this.title,
       @required this.user,
-      // @required this.chatGroup,
+      // @required this.chatRoom,
       @required this.chatMessages,
       @required this.receivers})
       : super(key: key);
 
   final String title;
-  final Contact user;
-  // final ChatGroup chatGroup;
-  final List<ChatMessage> chatMessages;
+  final ElgContact user;
+  // final ChatRoom chatRoom;
+  final List<ElgChatMessage> chatMessages;
   // Users in the chat
-  final List<Contact> receivers;
+  final List<ElgContact> receivers;
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ConversationBloc, ConversationState>(
       listener: (context, state) {},
       builder: (context, state) {
-        return ConversationList(
+        return ElgConversationList(
             title: title,
             user: user,
             chatMessages: state.chatMessages,
-            onNewChatMessage: (ChatMessage newMessage) =>
+            onNewChatMessage: (ElgChatMessage newMessage) =>
                 _onNewChatMessage(newMessage, context));
       },
     );
   }
 
-  void _onNewChatMessage(ChatMessage newChatMessage, BuildContext context) {
+  void _onNewChatMessage(ElgChatMessage newChatMessage, BuildContext context) {
     BlocProvider.of<ConversationBloc>(context).add(NewMessageEvent(
-        // chatGroup: chatGroup,
+        // chatRoom: chatRoom,
         newChatMessage: newChatMessage,
         receivers: this.receivers));
   }

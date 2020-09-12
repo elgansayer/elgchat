@@ -1,7 +1,7 @@
 part of 'finduser_bloc.dart';
 
 class FindUserState extends Equatable {
-  final List<Contact> contacts;
+  final List<ElgContact> contacts;
 
   FindUserState({this.contacts});
 

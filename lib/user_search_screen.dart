@@ -5,8 +5,8 @@ import 'models.dart';
 
 const double kdefaultDecorationHeightOffset = 12.0;
 
-class UserSearchScreen extends StatelessWidget {
-  const UserSearchScreen({
+class ElgUserSearchScreen extends StatelessWidget {
+  const ElgUserSearchScreen({
     Key key,
     this.onUserSearch,
     this.onTap,
@@ -15,9 +15,9 @@ class UserSearchScreen extends StatelessWidget {
   }) : super(key: key);
 
   final Function(String value) onUserSearch;
-  final List<Contact> contacts;
-  final Function(Contact contact) onTap;
-  final Function(Contact contact) onLongPress;
+  final List<ElgContact> contacts;
+  final Function(ElgContact contact) onTap;
+  final Function(ElgContact contact) onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,7 @@ class UserSearchScreen extends StatelessWidget {
     return Container();
   }
 
-  buildContact(Contact contact) {
+  buildContact(ElgContact contact) {
     return ListTile(
         onTap: this.onTap != null ? () => this.onTap(contact) : null,
         onLongPress:

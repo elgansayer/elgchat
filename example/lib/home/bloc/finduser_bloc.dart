@@ -28,13 +28,13 @@ class FindUserBloc extends Bloc<FindUserEvent, FindUserState> {
     String searchPhrase = event.phrase.toLowerCase();
 
     int i = 0;
-    List<Contact> allContacts = users
+    List<ElgContact> allContacts = users
         .where((element) =>
             element.email.toLowerCase().contains(searchPhrase) ||
             element.displayName.toLowerCase().contains(searchPhrase))
         .map((e) {
       i++;
-      return Contact(
+      return ElgContact(
           id: e.uid,
           username: e.displayName ?? e.email,
           photoUrl: e.photoUrl ?? "https://picsum.photos/100/100?i=$i)}",

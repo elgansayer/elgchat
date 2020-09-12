@@ -7,31 +7,32 @@ import '../../models.dart';
 import 'chat_room_bloc.dart';
 
 class ChatRoomsRepository {
-  List<ChatRoom> chatRoomList = List<ChatRoom>();
-  List<MyChatRoom> myChatList = List<MyChatRoom>();
-  PublishSubject<List<ChatRoom>> chatList = PublishSubject<List<ChatRoom>>();
+  List<ElgChatRoom> chatRoomList = List<ElgChatRoom>();
+  List<UserChatRoomInfo> myChatList = List<UserChatRoomInfo>();
+  PublishSubject<List<ElgChatRoom>> chatList =
+      PublishSubject<List<ElgChatRoom>>();
   StreamSubscription _firebaseSubscription;
 
   Stream<QuerySnapshot> monitor(String userId) {
     final ref = Firestore.instance
         .collection(
-            "${UsersProps.collectionName}/$userId/${MyChatRoomProps.collectionName}")
+            "${UsersProps.collectionName}/$userId/${UserChatRoomInfoProps.collectionName}")
         // .where(ChatRoomProps.userIds, arrayContains: userId)
         .orderBy(ChatRoomProps.updated);
 
     return ref.snapshots();
   }
 
-  PublishSubject<List<ChatRoom>> get(String userId) {
+  PublishSubject<List<ElgChatRoom>> get(String userId) {
     _firebaseSubscription?.cancel();
     _firebaseSubscription =
         this.monitor(userId).listen((QuerySnapshot allRooms) {
-      List<MyChatRoom> myChatRooms = allRooms.documents
+      List<UserChatRoomInfo> myChatRooms = allRooms.documents
           .map((DocumentSnapshot doc) => _buildChatRoomFromDoc(userId, doc))
           .toList();
 
-      List<ChatRoom> chatRooms =
-          myChatRooms.map((MyChatRoom mcg) => mcg.copyWith()).toList();
+      List<ElgChatRoom> chatRooms =
+          myChatRooms.map((UserChatRoomInfo mcg) => mcg.copyWith()).toList();
 
       myChatList.addAll(myChatRooms);
       this.chatRoomList.addAll(chatRooms);
@@ -57,7 +58,7 @@ class ChatRoomsRepository {
   //   return readBy.contains(userId);
   // }
 
-  MyChatRoom _buildChatRoomFromDoc(String userId, DocumentSnapshot doc) {
+  UserChatRoomInfo _buildChatRoomFromDoc(String userId, DocumentSnapshot doc) {
     Map data = doc.data;
 
     // List<String> readBy = getStrListParam<List<String>>(
@@ -66,16 +67,17 @@ class ChatRoomsRepository {
     String creatorId = getParam<String>(ChatRoomProps.creatorId, data, '');
     // bool read = isRead(userId, creatorId, readBy);
 
-    return MyChatRoom(
+    return UserChatRoomInfo(
       id: doc.documentID,
+      roomId: getParam<String>(UserChatRoomInfoProps.roomId, data, "-1"),
       muted: getParam<bool>(ChatRoomProps.muted, data, false),
       pinned: getParam<bool>(ChatRoomProps.pinned, data, false),
       archived: getParam<bool>(ChatRoomProps.archived, data, false),
       selected: false,
-      photoUrl: getParam<String>(ChatRoomProps.photoUrl, data, ''),
+      photoUrl: getParam<String>(UserChatRoomInfoProps.roomPhotoUrl, data, ''),
       lastMessage: getParam<String>(ChatRoomProps.lastMessage, data, ''),
       created: getTimeFromMap(ChatRoomProps.created, data),
-      name: getParam<String>(ChatRoomProps.name, data, ''),
+      name: getParam<String>(UserChatRoomInfoProps.roomName, data, ''),
       creatorId: creatorId,
       updated: getTimeFromMap(ChatRoomProps.updated, data),
       // read: read,
@@ -91,7 +93,7 @@ class ChatRoomsRepository {
     WriteBatch fsBatch = Firestore.instance.batch();
 
     CollectionReference collectionRef =
-        Firestore.instance.collection(MyChatRoomProps.collectionName);
+        Firestore.instance.collection(UserChatRoomInfoProps.collectionName);
 
     for (ChatRoomUpdateData updateData in allUpdateData) {
       fsBatch.updateData(
@@ -107,7 +109,7 @@ class ChatRoomsRepository {
     WriteBatch fsBatch = Firestore.instance.batch();
 
     CollectionReference collectionRef =
-        Firestore.instance.collection(MyChatRoomProps.collectionName);
+        Firestore.instance.collection(UserChatRoomInfoProps.collectionName);
 
     for (ChatRoomUpdateData updateData in allUpdateData) {
       fsBatch.setData(

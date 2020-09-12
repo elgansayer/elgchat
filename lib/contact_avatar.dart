@@ -11,12 +11,12 @@ class ContactAvatar extends StatelessWidget {
       this.onTap,
       this.onLongPress})
       : super(key: key);
-  final Contact contact;
+  final ElgContact contact;
   final double radius;
   final Color backgroundColor;
 
-  final Function(Contact contact) onTap;
-  final Function(Contact contact) onLongPress;
+  final Function(ElgContact contact) onTap;
+  final Function(ElgContact contact) onLongPress;
 
   @override
   Widget build(BuildContext context) {

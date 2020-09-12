@@ -12,18 +12,26 @@ import 'home_bloc.dart';
 part 'chat_room_event.dart';
 part 'chat_room_state.dart';
 
-class MyChatRoomProps extends ChatRoomProps {
-  static const String collectionName = "chat_rooms";
+class UserChatRoomInfoProps extends ChatRoomProps {
+  static const String collectionName = "room_info";
+  static const String roomId = "roomId";
+  static const String lastRead = "lastRead";
+  static const String roomPhotoUrl = "roomPhotoUrl";
+  static const String roomName = "roomName";
 }
 
-class MyChatRoom extends ChatRoom {
+class UserChatRoomInfo extends ElgChatRoom {
   // final List<String> readBy;
   final List<String> receiverIds;
+  final String roomId;
+  final DateTime lastRead;
 
-  MyChatRoom(
+  UserChatRoomInfo(
       {
       // this.readBy,
       this.receiverIds,
+      this.roomId,
+      this.lastRead,
       String id,
       String name,
       String lastMessage,
@@ -177,21 +185,21 @@ class ChatRoomScreenBloc
 
   Stream<ChatRoomScreenState> _openChatRoom(OpenChatRoom event) async* {
     // List<ChatRoom> chatRoomList = this.chatRoomsRepository.chatRoomList;
-    List<MyChatRoom> myChatRoomList = this.chatRoomsRepository.myChatList;
+    List<UserChatRoomInfo> myChatRoomList = this.chatRoomsRepository.myChatList;
 
     // String contactToId = event.receiverUser.id;
     // String userIdThisApp = event.appUser.id;
 
     // Ignore room chats
-    MyChatRoom foundChatRoom = myChatRoomList
+    UserChatRoomInfo foundChatRoom = myChatRoomList
         .firstWhere((cg) => cg.id == event.chatRoom.id, orElse: () => null);
 
     // final chatRoom =
     //     chatRoomList.firstWhere((cg) => cg.id == foundChatRoom.id);
     // _markRead(MarkRead(chatRooms: [chatRoom], userId: userIdThisApp));
 
-    List<Contact> receivers = foundChatRoom.receiverIds.map((receiverId) {
-      return Contact(
+    List<ElgContact> receivers = foundChatRoom.receiverIds.map((receiverId) {
+      return ElgContact(
           id: receiverId,
           username: "err",
           photoUrl: "",
@@ -208,20 +216,20 @@ class ChatRoomScreenBloc
   }
 
   Stream<ChatRoomScreenState> _openNewChat(CreateNewChat event) async* {
-    List<ChatRoom> chatRoomList = this.chatRoomsRepository.chatRoomList;
-    List<MyChatRoom> myChatRoomList = this.chatRoomsRepository.myChatList;
+    List<ElgChatRoom> chatRoomList = this.chatRoomsRepository.chatRoomList;
+    List<UserChatRoomInfo> myChatRoomList = this.chatRoomsRepository.myChatList;
 
     String contactToId = event.receiverUser.id;
     String userIdThisApp = event.appUser.id;
 
     // Ignore room chats
-    MyChatRoom foundChatRoom = myChatRoomList.firstWhere(
+    UserChatRoomInfo foundChatRoom = myChatRoomList.firstWhere(
         (cg) =>
             cg.receiverIds.contains(contactToId) && cg.receiverIds.length == 1,
         orElse: () => null);
 
     if (foundChatRoom == null) {
-      ChatRoom newChatRoom = ChatRoom(
+      ElgChatRoom newChatRoom = ElgChatRoom(
           id: '-1',
           name: event.receiverUser.username,
           lastMessage: '',
@@ -251,7 +259,7 @@ class ChatRoomScreenBloc
       chatRoomsSubscription?.cancel();
       chatRoomsSubscription = chatRoomsRepository
           .get(event.userId)
-          .listen((List<ChatRoom> chatRooms) {
+          .listen((List<ElgChatRoom> chatRooms) {
         bool anyNotSeen = chatRooms.any((cg) => !cg.read);
         this.homeBloc.add(ChangeHomePageMessagesIcon(anyNotSeen));
 
@@ -269,9 +277,9 @@ class ChatRoomScreenBloc
     WriteBatch fsBatch = Firestore.instance.batch();
     String appUserId = userRepository.user.uid;
 
-    for (ChatRoom chatRoom in event.chatRooms) {
+    for (ElgChatRoom chatRoom in event.chatRooms) {
       CollectionReference collectionRef = Firestore.instance.collection(
-          "${UsersProps.collectionName}/$appUserId/${MyChatRoomProps.collectionName}");
+          "${UsersProps.collectionName}/$appUserId/${UserChatRoomInfoProps.collectionName}");
       String documentId = chatRoom.id;
       DocumentReference document = collectionRef.document(documentId);
       fsBatch.delete(document);
@@ -348,8 +356,8 @@ class ChatRoomScreenBloc
   void _archiveChatRooms(ArchiveChatRooms event) {
     List<ChatRoomUpdateData> allUpdateData = new List<ChatRoomUpdateData>();
     for (var chatRoom in event.chatRooms) {
-      ChatRoomUpdateData chatRoomUpdateData = new ChatRoomUpdateData(
-          chatRoom.id, {ChatRoomProps.archived: true});
+      ChatRoomUpdateData chatRoomUpdateData =
+          new ChatRoomUpdateData(chatRoom.id, {ChatRoomProps.archived: true});
 
       allUpdateData.add(chatRoomUpdateData);
     }
@@ -360,8 +368,8 @@ class ChatRoomScreenBloc
   void _unarchiveChatRooms(UnarchiveChatRooms event) {
     List<ChatRoomUpdateData> allUpdateData = new List<ChatRoomUpdateData>();
     for (var chatRoom in event.chatRooms) {
-      ChatRoomUpdateData chatRoomUpdateData = new ChatRoomUpdateData(
-          chatRoom.id, {ChatRoomProps.archived: false});
+      ChatRoomUpdateData chatRoomUpdateData =
+          new ChatRoomUpdateData(chatRoom.id, {ChatRoomProps.archived: false});
 
       allUpdateData.add(chatRoomUpdateData);
     }

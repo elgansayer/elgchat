@@ -6,19 +6,19 @@
 
 // import '../models.dart';
 
-// class ChatGroupListLogic<T extends ChatGroup> {
-//   List<T> chatGroups = List<T>();
-//   List<T> archivedGroups = List<T>();
+// class ChatRoomListLogic<T extends ChatRoom> {
+//   List<T> chatRooms = List<T>();
+//   List<T> archivedRooms = List<T>();
 //   ChatListState currentState = ChatListState.loading;
 //   // String searchString = "";
 
-//   ChatGroupListLogic(chatGroups) {
+//   ChatRoomListLogic(chatRooms) {
 
 //     eventController.stream.listen(handleGotEvent);
 //     listenToState();
 //     listenToChatsStream();
 
-//         this.setChatGroups(SetChatGroupsEvent(chatGroups));
+//         this.setChatRooms(SetChatRoomsEvent(chatRooms));
 
 //   }
 
@@ -34,10 +34,10 @@
 //   }
 
 //   listenToChatsStream() {
-//     chatGroupsStreamController.stream.listen((List<T> chatGroups) {
+//     chatRoomsStreamController.stream.listen((List<T> chatRooms) {
 //       // bool viewArchived = this.currentState == ChatListState.listarchived;
-//       // List<T> nonArchived = chatGroups.archivedIs(viewArchived);
-//       visibleChatGroupsStreamController.add(chatGroups);
+//       // List<T> nonArchived = chatRooms.archivedIs(viewArchived);
+//       visibleChatRoomsStreamController.add(chatRooms);
 //     });
 //   }
 
@@ -56,12 +56,12 @@
 //       return toggleSelectedEvent(event);
 //     }
 
-//     // if (event is AddChatGroupsEvent) {
-//     //   return addChatGroups(event);
+//     // if (event is AddChatRoomsEvent) {
+//     //   return addChatRooms(event);
 //     // }
 
-//     if (event is SetChatGroupsEvent) {
-//       return setChatGroups(event);
+//     if (event is SetChatRoomsEvent) {
+//       return setChatRooms(event);
 //     }
 
 //     if (event is SetStateEvent) {
@@ -103,65 +103,65 @@
 
 //   deletedArchivedEvent(DeletedArchivedEvent event) {
 //     // Remove from archived
-//     List<T> newChatGroups = event.chatGroups;
+//     List<T> newChatRooms = event.chatRooms;
 
 //     // Remove from the archived list
-//     // any item in newChatGroups
-//     archivedGroups.removeWhere((cg) => newChatGroups.contains(cg));
+//     // any item in newChatRooms
+//     archivedRooms.removeWhere((cg) => newChatRooms.contains(cg));
 
 //     // Add only archived to ourarchive list
-//     archivedChatGroupsStreamController.add(archivedGroups);
+//     archivedChatRoomsStreamController.add(archivedRooms);
 //   }
 
 //   unArchivedEvent(UnArchivedEvent event) {
 //     // Remove from archived
-//     List<T> newChatGroups = event.chatGroups.map((ChatGroup cg) {
+//     List<T> newChatRooms = event.chatRooms.map((ChatRoom cg) {
 //       return cg.copyWith(archived: false, selected: false);
 //     }).toList();
 
 //     //Add back into our chat list
-//     chatGroups.addAll(newChatGroups);
+//     chatRooms.addAll(newChatRooms);
 
 //     // Remove from the archived list
-//     // any item in newChatGroups
-//     archivedGroups.removeWhere((cg) => newChatGroups.contains(cg));
+//     // any item in newChatRooms
+//     archivedRooms.removeWhere((cg) => newChatRooms.contains(cg));
 
 //     // Add only archived to ourarchive list
-//     archivedChatGroupsStreamController.add(archivedGroups);
+//     archivedChatRoomsStreamController.add(archivedRooms);
 
 //     // Update our chat list
-//     chatGroupsStreamController.add(this.chatGroups);
+//     chatRoomsStreamController.add(this.chatRooms);
 //   }
 
 //   clearSearchString() {
 //     // Runs through the visible filters
-//     chatGroupsStreamController.add(this.chatGroups);
+//     chatRoomsStreamController.add(this.chatRooms);
 //   }
 
 //   setSearchString(SetSearchString event) {
-//     List<T> chatGroups = this
-//         .chatGroups
+//     List<T> chatRooms = this
+//         .chatRooms
 //         .where((cg) => cg.name.toLowerCase().contains(event.phrase))
 //         .toList();
 
-//     chatGroupsStreamController.add(chatGroups);
+//     chatRoomsStreamController.add(chatRooms);
 //   }
 
 //   selectAllEvent() {
-//     chatGroups = chatGroups.map((T cg) {
+//     chatRooms = chatRooms.map((T cg) {
 //       if (cg.archived != true) {
 //         return cg.copyWith(selected: true);
 //       }
 //       return cg.copyWith(selected: false);
 //     }).toList();
 
-//     chatGroupsStreamController.add(this.chatGroups);
-//     this.selectedStreamController.add(this.chatGroups);
+//     chatRoomsStreamController.add(this.chatRooms);
+//     this.selectedStreamController.add(this.chatRooms);
 //   }
 
 //   deleteSelectedEvent() {
-//     List<T> allSelected = chatGroups.selected();
-//     chatGroups.removeWhere((T cg) => allSelected.contains(cg));
+//     List<T> allSelected = chatRooms.selected();
+//     chatRooms.removeWhere((T cg) => allSelected.contains(cg));
 
 //     // This fires widget.onDeleted
 //     this.dispatchCallback.add(DeletedCallbackEvent(allSelected));
@@ -171,8 +171,8 @@
 //   }
 
 //   pinSelectedEvent() {
-//     List<T> allSelected = chatGroups.selected();
-//     chatGroups = chatGroups.map((T cg) {
+//     List<T> allSelected = chatRooms.selected();
+//     chatRooms = chatRooms.map((T cg) {
 //       bool selected = allSelected.contains(cg);
 //       if (selected) {
 //         return cg.copyWith(pinned: !cg.pinned);
@@ -181,23 +181,23 @@
 //     }).toList();
 
 //     List<T> allUpdatedSelected =
-//         chatGroups.where((T cg) => allSelected.contains(cg)).toList();
+//         chatRooms.where((T cg) => allSelected.contains(cg)).toList();
 
 //     // This fires widget.onTogglePinned
 //     this.dispatchCallback.add(TogglePinnedCallbackEvent(allUpdatedSelected));
 
 //     // Move pinned to the top
-//     List<T> allPinned = chatGroups.pinned();
-//     chatGroups.removeWhere((cg) => allPinned.contains(cg));
-//     chatGroups.insertAll(0, allPinned);
+//     List<T> allPinned = chatRooms.pinned();
+//     chatRooms.removeWhere((cg) => allPinned.contains(cg));
+//     chatRooms.insertAll(0, allPinned);
 
 //     unselectAll();
 //     stateStreamController.add(ChatListState.list);
 //   }
 
 //   markSelectedUnreadEvent(MarkSelectedUnreadEvent event) {
-//     List<T> allSelected = chatGroups.selected();
-//     chatGroups = chatGroups.map((T cg) {
+//     List<T> allSelected = chatRooms.selected();
+//     chatRooms = chatRooms.map((T cg) {
 //       bool selected = allSelected.contains(cg);
 
 //       if (selected) {
@@ -215,7 +215,7 @@
 //     }).toList();
 
 //     List<T> allUpdatedSelected =
-//         chatGroups.where((T cg) => allSelected.contains(cg)).toList();
+//         chatRooms.where((T cg) => allSelected.contains(cg)).toList();
 
 //     // This fires widget.onMarkedUnread
 //     this.dispatchCallback.add(MarkedUnreadCallbackEvent(allUpdatedSelected));
@@ -225,8 +225,8 @@
 //   }
 
 //   // markReadEvent(MarkSelectedReadEvent event) {
-//   //   List<T> allSelected = chatGroups.selected();
-//   //   chatGroups = chatGroups.map((T cg) {
+//   //   List<T> allSelected = chatRooms.selected();
+//   //   chatRooms = chatRooms.map((T cg) {
 //   //     bool selected = allSelected.contains(cg);
 
 //   //     if (selected) {
@@ -238,7 +238,7 @@
 //   //   }).toList();
 
 //   //   List<T> allUpdatedSelected =
-//   //       chatGroups.where((T cg) => allSelected.contains(cg)).toList();
+//   //       chatRooms.where((T cg) => allSelected.contains(cg)).toList();
 
 //   //   // This fires widget.onMarkedRead
 //   //   this.dispatchCallback.add(MarkedReadCallbackEvent(allUpdatedSelected));
@@ -248,8 +248,8 @@
 //   // }
 
 //   archiveSelectedEvent() {
-//     List<T> allSelected = chatGroups.selected();
-//     chatGroups = chatGroups.map((T cg) {
+//     List<T> allSelected = chatRooms.selected();
+//     chatRooms = chatRooms.map((T cg) {
 //       bool selected = allSelected.contains(cg);
 //       if (selected) {
 //         return cg.copyWith(archived: true, selected: false);
@@ -258,17 +258,17 @@
 //     }).toList();
 
 //     List<T> allUpdatedSelected =
-//         chatGroups.where((T cg) => allSelected.contains(cg)).toList();
+//         chatRooms.where((T cg) => allSelected.contains(cg)).toList();
 
 //     // This fires widget.onArchived
 //     this.dispatchCallback.add(ArchivedCallbackEvent(allUpdatedSelected));
 
 //     // Get all archived, remov ethem from the list
-//     List<T> allArchived = chatGroups.archivedIs(true);
-//     chatGroups.removeWhere((cg) => allArchived.contains(cg));
+//     List<T> allArchived = chatRooms.archivedIs(true);
+//     chatRooms.removeWhere((cg) => allArchived.contains(cg));
 
-//     archivedGroups.addAll(allArchived);
-//     archivedChatGroupsStreamController.add(archivedGroups);
+//     archivedRooms.addAll(allArchived);
+//     archivedChatRoomsStreamController.add(archivedRooms);
 
 //     unselectAll();
 
@@ -276,8 +276,8 @@
 //   }
 
 //   muteSelectedEvent() {
-//     List<T> allSelected = chatGroups.selected();
-//     chatGroups = chatGroups.map((T cg) {
+//     List<T> allSelected = chatRooms.selected();
+//     chatRooms = chatRooms.map((T cg) {
 //       bool selected = allSelected.contains(cg);
 //       if (selected) {
 //         return cg.copyWith(muted: !cg.muted);
@@ -286,7 +286,7 @@
 //     }).toList();
 
 //     List<T> allUpdatedSelected =
-//         chatGroups.where((T cg) => allSelected.contains(cg)).toList();
+//         chatRooms.where((T cg) => allSelected.contains(cg)).toList();
 
 //     // This fires widget.onToggleMuted
 //     this.dispatchCallback.add(ToggleMutedCallbackEvent(allUpdatedSelected));
@@ -315,21 +315,21 @@
 //   }
 
 //   final selectedStreamController = StreamController<List<T>>.broadcast();
-//   StreamSink<List<T>> get selectedChatGroupsSink =>
+//   StreamSink<List<T>> get selectedChatRoomsSink =>
 //       selectedStreamController.sink;
-//   Stream<List<T>> get selectedChatGroupsStream =>
+//   Stream<List<T>> get selectedChatRoomsStream =>
 //       selectedStreamController.stream;
 
 //   toggleSelectedEvent(ToggleSelectedEvent event) {
-//     int index = this.chatGroups.indexOf(event.chatGroup);
-//     T oldChatGroup = this.chatGroups.elementAt(index);
-//     T newChatGroup = event.chatGroup.copyWith(selected: !oldChatGroup.selected);
+//     int index = this.chatRooms.indexOf(event.chatRoom);
+//     T oldChatRoom = this.chatRooms.elementAt(index);
+//     T newChatRoom = event.chatRoom.copyWith(selected: !oldChatRoom.selected);
 
-//     this.chatGroups.replaceRange(index, index + 1, [newChatGroup]);
+//     this.chatRooms.replaceRange(index, index + 1, [newChatRoom]);
 
-//     chatGroupsStreamController.add(this.chatGroups);
+//     chatRoomsStreamController.add(this.chatRooms);
 
-//     List<T> allSelected = this.chatGroups.selected();
+//     List<T> allSelected = this.chatRooms.selected();
 //     if (allSelected.length > 0 &&
 //         this.currentState != ChatListState.selection) {
 //       stateStreamController.add(ChatListState.selection);
@@ -339,60 +339,60 @@
 //   }
 
 //   unselectAll() {
-//     this.chatGroups = chatGroups.map((T cg) {
+//     this.chatRooms = chatRooms.map((T cg) {
 //       return cg.copyWith(selected: false);
 //     }).toList();
 
-//     chatGroupsStreamController.add(this.chatGroups);
+//     chatRoomsStreamController.add(this.chatRooms);
 //     this.selectedStreamController.add([]);
 //   }
 
-//   final visibleChatGroupsStreamController = StreamController<List<T>>();
-//   StreamSink<List<T>> get visibleChatGroupsSink =>
-//       visibleChatGroupsStreamController.sink;
-//   Stream<List<T>> get visibleChatGroupsStream =>
-//       visibleChatGroupsStreamController.stream;
+//   final visibleChatRoomsStreamController = StreamController<List<T>>();
+//   StreamSink<List<T>> get visibleChatRoomsSink =>
+//       visibleChatRoomsStreamController.sink;
+//   Stream<List<T>> get visibleChatRoomsStream =>
+//       visibleChatRoomsStreamController.stream;
 
-//   final chatGroupsStreamController = StreamController<List<T>>.broadcast();
-//   StreamSink<List<T>> get chatGroupsSink => chatGroupsStreamController.sink;
-//   Stream<List<T>> get chatGroupsStreamStream =>
-//       chatGroupsStreamController.stream;
+//   final chatRoomsStreamController = StreamController<List<T>>.broadcast();
+//   StreamSink<List<T>> get chatRoomsSink => chatRoomsStreamController.sink;
+//   Stream<List<T>> get chatRoomsStreamStream =>
+//       chatRoomsStreamController.stream;
 
-//   setChatGroups(SetChatGroupsEvent event) {
+//   setChatRooms(SetChatRoomsEvent event) {
 //     // If we want to use a reference, else use mutatable list
-//     // if (event.chatGroupsRef != null) {
-//     //   List<T> newChatGroups = event.chatGroupsRef;
-//     //   chatGroups = newChatGroups;
+//     // if (event.chatRoomsRef != null) {
+//     //   List<T> newChatRooms = event.chatRoomsRef;
+//     //   chatRooms = newChatRooms;
 //     // } else {
-//     //   List<T> newChatGroups = event.chatGroups;
-//     //   chatGroups = [...newChatGroups];
+//     //   List<T> newChatRooms = event.chatRooms;
+//     //   chatRooms = [...newChatRooms];
 //     // }
-//     chatGroups = [...event.chatGroups];
-//     chatGroupsStreamController.add(chatGroups);
+//     chatRooms = [...event.chatRooms];
+//     chatRoomsStreamController.add(chatRooms);
 //     if (this.currentState == ChatListState.loading) {
 //       // dispatch.add(SetStateEvent(ChatListState.list));
 //       this.stateSink.add(ChatListState.list);
 //     }
 //   }
 
-//   // addChatGroups(AddChatGroupsEvent event) {
-//   //   List<T> newChatGroups = event.chatGroups;
-//   //   chatGroups.addAll(newChatGroups);
+//   // addChatRooms(AddChatRoomsEvent event) {
+//   //   List<T> newChatRooms = event.chatRooms;
+//   //   chatRooms.addAll(newChatRooms);
 
-//   //   chatGroupsStreamController.add(chatGroups);
+//   //   chatRoomsStreamController.add(chatRooms);
 //   // }
 
-//   final archivedChatGroupsStreamController = StreamController<List<T>>();
-//   StreamSink<List<T>> get archivedChatGroupsSink =>
-//       archivedChatGroupsStreamController.sink;
-//   Stream<List<T>> get archivedChatGroupsStream =>
-//       archivedChatGroupsStreamController.stream;
+//   final archivedChatRoomsStreamController = StreamController<List<T>>();
+//   StreamSink<List<T>> get archivedChatRoomsSink =>
+//       archivedChatRoomsStreamController.sink;
+//   Stream<List<T>> get archivedChatRoomsStream =>
+//       archivedChatRoomsStreamController.stream;
 
 //   dispose() {
-//     archivedChatGroupsStreamController.close();
+//     archivedChatRoomsStreamController.close();
 //     stateStreamController.close();
-//     chatGroupsStreamController.close();
-//     visibleChatGroupsStreamController.close();
+//     chatRoomsStreamController.close();
+//     visibleChatRoomsStreamController.close();
 //     selectedStreamController.close();
 //     eventController.close();
 //     callbackEventController.close();

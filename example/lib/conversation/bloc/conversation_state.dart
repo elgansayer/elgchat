@@ -1,24 +1,24 @@
 part of 'conversation_bloc.dart';
 
 class ConversationState extends Equatable {
-  ConversationState({@required this.chatGroup, @required this.chatMessages});
-  final List<ChatMessage> chatMessages;
-  final ChatGroup chatGroup;
+  ConversationState({@required this.chatRoom, @required this.chatMessages});
+  final List<ElgChatMessage> chatMessages;
+  final ElgChatRoom chatRoom;
 
-  factory ConversationState.init(ChatGroup chatGroup) {
-    return ConversationState(chatGroup: chatGroup, chatMessages: []);
+  factory ConversationState.init(ElgChatRoom chatRoom) {
+    return ConversationState(chatRoom: chatRoom, chatMessages: []);
   }
 
   ConversationState copyWith({
-    List<ChatMessage> chatMessages,
-    ChatGroup chatGroup,
+    List<ElgChatMessage> chatMessages,
+    ElgChatRoom chatRoom,
   }) {
     return ConversationState(
       chatMessages: chatMessages ?? this.chatMessages,
-      chatGroup: chatGroup ?? this.chatGroup,
+      chatRoom: chatRoom ?? this.chatRoom,
     );
   }
 
   @override
-  List<Object> get props => [chatMessages, chatGroup];
+  List<Object> get props => [chatMessages, chatRoom];
 }

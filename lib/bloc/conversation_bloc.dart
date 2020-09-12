@@ -6,10 +6,10 @@ import '../models.dart';
 import 'conversation_event.dart';
 
 class ConversationListLogic {
-  List<ChatMessage> chatMessages = List<ChatMessage>();
+  List<ElgChatMessage> chatMessages = List<ElgChatMessage>();
   ConversationLogicState currentState = ConversationLogicState.loading;
-  ChatMessage selectedChatMessage;
-  ChatMessage repiyingWithChatMessage;
+  ElgChatMessage selectedChatMessage;
+  ElgChatMessage repiyingWithChatMessage;
   bool scrollButtonValue = false;
 
   ConversationListLogic() {
@@ -59,7 +59,7 @@ class ConversationListLogic {
       reactions.add(event.uCode);
     }
 
-    ChatMessage newChatMessage =
+    ElgChatMessage newChatMessage =
         event.chatMessage.copyWith(reactions: reactions);
 
     var index = this.chatMessages.indexOf(event.chatMessage);
@@ -87,10 +87,10 @@ class ConversationListLogic {
     this.scrollButtonValue = event.value;
   }
 
-  final replyingWithCMController = StreamController<ChatMessage>();
-  Stream<ChatMessage> get replyingWithChatMsgStream =>
+  final replyingWithCMController = StreamController<ElgChatMessage>();
+  Stream<ElgChatMessage> get replyingWithChatMsgStream =>
       replyingWithCMController.stream;
-  Sink<ChatMessage> get replyingWithCMControllerSink {
+  Sink<ElgChatMessage> get replyingWithCMControllerSink {
     return replyingWithCMController.sink;
   }
 
@@ -124,18 +124,18 @@ class ConversationListLogic {
   }
 
   final chatMessagesStreamController =
-      StreamController<List<ChatMessage>>.broadcast();
-  StreamSink<List<ChatMessage>> get chatMessagesSink =>
+      StreamController<List<ElgChatMessage>>.broadcast();
+  StreamSink<List<ElgChatMessage>> get chatMessagesSink =>
       chatMessagesStreamController.sink;
-  Stream<List<ChatMessage>> get visibleChatMessagesStream =>
+  Stream<List<ElgChatMessage>> get visibleChatMessagesStream =>
       chatMessagesStreamController.stream;
   setChatMessages(SetChatMessagesEvent event) {
     // If we want to use a reference, else use mutatable list
     if (event.chatMessagesRef != null) {
-      List<ChatMessage> newChatMessages = event.chatMessagesRef;
+      List<ElgChatMessage> newChatMessages = event.chatMessagesRef;
       chatMessages = newChatMessages;
     } else {
-      List<ChatMessage> newChatMessages = event.chatMessages;
+      List<ElgChatMessage> newChatMessages = event.chatMessages;
       chatMessages = [...newChatMessages];
     }
 
@@ -147,10 +147,10 @@ class ConversationListLogic {
     }
   }
 
-  final selectedStreamController = StreamController<ChatMessage>.broadcast();
-  StreamSink<ChatMessage> get selectedChatGroupsSink =>
+  final selectedStreamController = StreamController<ElgChatMessage>.broadcast();
+  StreamSink<ElgChatMessage> get selectedChatRoomsSink =>
       selectedStreamController.sink;
-  Stream<ChatMessage> get selectedChatGroupsStream =>
+  Stream<ElgChatMessage> get selectedChatRoomsStream =>
       selectedStreamController.stream;
 
   toggleSelectedEvent(ToggleSelectedEvent event) {

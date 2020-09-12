@@ -2,48 +2,48 @@ import '../models.dart';
 
 abstract class ChatListCallbackEvent {}
 
-class UnarchivedCallbackEvent<T extends ChatGroup>
+class UnarchivedCallbackEvent<T extends ElgChatRoom>
     extends ChatListCallbackEvent {
-  final List<T> chatGroups;
-  UnarchivedCallbackEvent(this.chatGroups);
+  final List<T> chatRooms;
+  UnarchivedCallbackEvent(this.chatRooms);
 }
 
-class DeletedCallbackEvent<T extends ChatGroup> extends ChatListCallbackEvent {
-  final List<T> chatGroups;
-  DeletedCallbackEvent(this.chatGroups);
+class DeletedCallbackEvent<T extends ElgChatRoom> extends ChatListCallbackEvent {
+  final List<T> chatRooms;
+  DeletedCallbackEvent(this.chatRooms);
 }
 
-class ToggleMutedCallbackEvent<T extends ChatGroup>
+class ToggleMutedCallbackEvent<T extends ElgChatRoom>
     extends ChatListCallbackEvent {
-  final List<T> chatGroups;
-  ToggleMutedCallbackEvent(this.chatGroups);
+  final List<T> chatRooms;
+  ToggleMutedCallbackEvent(this.chatRooms);
 }
 
-class TogglePinnedCallbackEvent<T extends ChatGroup>
+class TogglePinnedCallbackEvent<T extends ElgChatRoom>
     extends ChatListCallbackEvent {
-  final List<T> chatGroups;
-  TogglePinnedCallbackEvent(this.chatGroups);
+  final List<T> chatRooms;
+  TogglePinnedCallbackEvent(this.chatRooms);
 }
 
-class MarkedUnreadCallbackEvent<T extends ChatGroup>
+class MarkedUnreadCallbackEvent<T extends ElgChatRoom>
     extends ChatListCallbackEvent {
-  final List<T> chatGroups;
-  MarkedUnreadCallbackEvent(this.chatGroups);
+  final List<T> chatRooms;
+  MarkedUnreadCallbackEvent(this.chatRooms);
 }
 
-// class MarkedUnseenCallbackEvent<T extends ChatGroup>
+// class MarkedUnseenCallbackEvent<T extends ChatRoom>
 //     extends ChatListCallbackEvent {
-//   final List<T> chatGroups;
-//   MarkedUnseenCallbackEvent(this.chatGroups);
+//   final List<T> chatRooms;
+//   MarkedUnseenCallbackEvent(this.chatRooms);
 // }
 
-class ArchivedCallbackEvent<T extends ChatGroup> extends ChatListCallbackEvent {
-  final List<T> chatGroups;
-  ArchivedCallbackEvent(this.chatGroups);
+class ArchivedCallbackEvent<T extends ElgChatRoom> extends ChatListCallbackEvent {
+  final List<T> chatRooms;
+  ArchivedCallbackEvent(this.chatRooms);
 }
 
-class ChatGroupTappedCallbackEvent<T extends ChatGroup>
+class ChatRoomTappedCallbackEvent<T extends ElgChatRoom>
     extends ChatListCallbackEvent {
-  final T chatGroup;
-  ChatGroupTappedCallbackEvent(this.chatGroup);
+  final T chatRoom;
+  ChatRoomTappedCallbackEvent(this.chatRoom);
 }

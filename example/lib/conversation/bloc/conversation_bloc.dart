@@ -29,15 +29,15 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     ConversationEvent event,
   ) async* {
     if (event is InitConversationEvent) {
-      yield* _initMonitorChatGroup(event.chatGroup);
+      yield* _initMonitorChatRoom(event.chatRoom);
     }
 
     if (event is NewMessageEvent) {
       _newChatMessage(event);
     }
 
-    if (event is SubscribeToChatGroupEvent) {
-      yield* _subscribeToChatGroupEvent(event);
+    if (event is SubscribeToChatRoomEvent) {
+      yield* _subscribeToChatRoomEvent(event);
     }
 
     if (event is ChatMessagesLoaded) {
@@ -45,13 +45,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  _monitorConversation(ChatGroup chatGroup) {
+  _monitorConversation(ElgChatRoom chatRoom) {
     try {
       chatsSubscription?.cancel();
       chatsSubscription = this
           ._conversationRepository
-          .get(chatGroup.id)
-          .listen((List<ChatMessage> chatMessages) {
+          .get(chatRoom.id)
+          .listen((List<ElgChatMessage> chatMessages) {
         this.add(ChatMessagesLoaded(chatMessages: chatMessages));
       });
     } catch (e) {
@@ -59,29 +59,29 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  Stream<ConversationState> _initMonitorChatGroup(ChatGroup chatGroup) async* {
-    if (chatGroup.id == '-1') {
-      yield ConversationState.init(chatGroup);
+  Stream<ConversationState> _initMonitorChatRoom(ElgChatRoom chatRoom) async* {
+    if (chatRoom.id == '-1') {
+      yield ConversationState.init(chatRoom);
       return;
     }
 
     yield state.copyWith(
-        chatGroup: chatGroup, chatMessages: state.chatMessages ?? []);
+        chatRoom: chatRoom, chatMessages: state.chatMessages ?? []);
 
-    _monitorConversation(chatGroup);
+    _monitorConversation(chatRoom);
   }
 
-  Stream<ConversationState> _subscribeToChatGroupEvent(
-      SubscribeToChatGroupEvent event) async* {
-    var newCHatGroup = state.chatGroup.copyWith(id: event.chatGroupId);
-    // var newState = state.copyWith(chatGroup: newCHatGroup);
-    yield* _initMonitorChatGroup(newCHatGroup);
+  Stream<ConversationState> _subscribeToChatRoomEvent(
+      SubscribeToChatRoomEvent event) async* {
+    var newCHatRoom = state.chatRoom.copyWith(id: event.chatRoomId);
+    // var newState = state.copyWith(chatRoom: newCHatRoom);
+    yield* _initMonitorChatRoom(newCHatRoom);
   }
 
   void _newChatMessage(NewMessageEvent event) async {
     NewMessage newMessage = NewMessage(
         chatMessage: event.newChatMessage,
-        chatGroup: state.chatGroup,
+        chatRoom: state.chatRoom,
         receiverIds: event.receivers.map((e) => e.id).toList());
 
     Map<String, String> headers = Map<String, String>();
@@ -99,47 +99,54 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       throw Exception('Failed to post message');
     }
 
-    // Get the subscribed chat group id
+    // Get the subscribed chat room id
     Map returnData = json.decode(response.body);
-    String chatGroupId = returnData['chatGroupId'];
+    String chatRoomId = returnData['chatRoomId'];
 
-    // If this statechat group is wrong.Rebuild
-    if (this.state.chatGroup.id != chatGroupId) {
-      this.add(SubscribeToChatGroupEvent(chatGroupId: chatGroupId));
+    // If this statechat room is wrong.Rebuild
+    if (this.state.chatRoom.id != chatRoomId) {
+      this.add(SubscribeToChatRoomEvent(chatRoomId: chatRoomId));
     }
   }
 }
 
 class NewMessage {
-  final ChatGroup chatGroup;
-  final ChatMessage chatMessage;
+  final ElgChatRoom chatRoom;
+  final ElgChatMessage chatMessage;
   final List<String> receiverIds;
 
   NewMessage(
       {@required this.receiverIds,
       @required this.chatMessage,
-      @required this.chatGroup});
+      @required this.chatRoom});
 
   Map<String, dynamic> toJSON() {
     return {
-      'chatGroup': {
-        'id': this.chatGroup.id,
-        'name': this.chatGroup.name,
-        'photoUrl': this.chatGroup.photoUrl,
-        'receiverIds': this.receiverIds
-      },
-      'chatMessage': {
-        // 'reactions': this.chatMessage.reactions.map((e) => e.toString()).toList(),
-        // 'starred': this.chatMessage.starred.toString(),
-        // 'deleted': this.chatMessage.deleted.toString(),
-        // 'mediaUrls': this.chatMessage.mediaUrls.map((e) => e.toString()).toList(),
-        // 'id': this.chatMessage.id ?? 'null',
-        'message': this.chatMessage.message,
-        // let the server set dates
-        // 'created': this.chatMessage.created.toIso8601String(),
-        // 'receiverIds': this.chatMessage.receiverIds,
-        'senderId': this.chatMessage.senderId
-      },
+      'receiverIds': this.receiverIds,
+      'roomId': this.chatRoom.id,
+      'message': this.chatMessage.message,
+      'senderId': this.chatMessage.senderId
     };
+
+    // return {
+    //   'chatRoom': {
+    //     'id': this.chatRoom.id,
+    //     'name': this.chatRoom.name,
+    //     'photoUrl': this.chatRoom.photoUrl,
+    //     'receiverIds': this.receiverIds
+    //   },
+    //   'chatMessage': {
+    //     // 'reactions': this.chatMessage.reactions.map((e) => e.toString()).toList(),
+    //     // 'starred': this.chatMessage.starred.toString(),
+    //     // 'deleted': this.chatMessage.deleted.toString(),
+    //     // 'mediaUrls': this.chatMessage.mediaUrls.map((e) => e.toString()).toList(),
+    //     // 'id': this.chatMessage.id ?? 'null',
+    //     'message': this.chatMessage.message,
+    //     // let the server set dates
+    //     // 'created': this.chatMessage.created.toIso8601String(),
+    //     // 'receiverIds': this.chatMessage.receiverIds,
+    //     'senderId': this.chatMessage.senderId
+    //   },
+    // };
   }
 }

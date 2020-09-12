@@ -13,10 +13,10 @@ class ChatRoomTile extends StatelessWidget {
       this.selected})
       : super(key: key);
   final bool selected;
-  final ChatRoom chatRoom;
-  final void Function(ChatRoom chatRoom) onChatRoomTileTap;
-  final void Function(ChatRoom chatRoom) onChatRoomTileLongPress;
-  final Widget Function(ChatRoom chatRoom, bool selected) chatRoomAvatarBuilder;
+  final ElgChatRoom chatRoom;
+  final void Function(ElgChatRoom chatRoom) onChatRoomTileTap;
+  final void Function(ElgChatRoom chatRoom) onChatRoomTileLongPress;
+  final Widget Function(ElgChatRoom chatRoom, bool selected) chatRoomAvatarBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +56,7 @@ class ChatRoomTile extends StatelessWidget {
     );
   }
 
-  Widget buildDateTime(ChatRoom chatRoom) {
+  Widget buildDateTime(ElgChatRoom chatRoom) {
     DateTime dateTime = chatRoom.updated.toUtc();
     String dateString = formatDateString(dateTime);
     return Text(dateString, style: TextStyle(color: Colors.grey));
@@ -74,15 +74,15 @@ class ChatRoomTile extends StatelessWidget {
     }
   }
 
-  Widget buildPinned(ChatRoom chatRoom) {
+  Widget buildPinned(ElgChatRoom chatRoom) {
     return Icon(Icons.person_pin, color: Colors.grey);
   }
 
-  Widget buildMuted(ChatRoom chatRoom) {
+  Widget buildMuted(ElgChatRoom chatRoom) {
     return Icon(Icons.volume_mute, color: Colors.grey);
   }
 
-  Widget buildNotRead(ChatRoom chatRoom) {
+  Widget buildNotRead(ElgChatRoom chatRoom) {
     return CircleAvatar(
       radius: 5,
     );

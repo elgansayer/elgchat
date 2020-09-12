@@ -5,12 +5,6 @@ import * as admin from 'firebase-admin';
 
 const USERS = 'users';
 
-// interface User {
-//     uid: string;
-//     name: string;
-//     photoUrl: string;
-//     lastSignInTime: string;
-// }
 
 export const onNewUserTrigger = functions.auth.user().onCreate(async (user) => {
     functions.logger.info("Creating new user");

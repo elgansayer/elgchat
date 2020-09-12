@@ -12,8 +12,8 @@ app.use(cors({ origin: true }));
 app.use(express.json());
 app.use(express.urlencoded());
 
-app.post('/newMessage', (req: any, res: any) => {
-    newMessage(req, res);
+app.post('/newMessage', (req: any, res: any, next: any) => {
+    newMessage(req, res, next);
 });
 
 // // build multiple CRUD interfaces:

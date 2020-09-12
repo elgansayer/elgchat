@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../user_repository.dart';
-import 'bloc/chat_groups_repository.dart';
+import 'bloc/chat_rooms_repository.dart';
 import 'bloc/home_bloc.dart';
-import 'bloc/chat_group_bloc.dart';
-import 'chat_list_page.dart';
+import 'bloc/chat_room_bloc.dart';
+import 'chat_room_list_page.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key}) : super(key: key);
@@ -19,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final HomeBloc _homeBloc = HomeBloc();
-  final ChatGroupsRepository _chatGroupsRepository = ChatGroupsRepository();
+  final ChatRoomsRepository _chatRoomsRepository = ChatRoomsRepository();
 
   @override
   void dispose() {
@@ -35,10 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final FirebaseUser user = userRepository.user;
 
     return MultiBlocProvider(providers: [
-      BlocProvider<ChatGroupScreenBloc>(
-          create: (context) => ChatGroupScreenBloc(
-              _chatGroupsRepository, userRepository, _homeBloc)
-            ..add(LoadChatGroups(userId: user.uid))),
+      BlocProvider<ChatRoomScreenBloc>(
+          create: (context) => ChatRoomScreenBloc(
+              _chatRoomsRepository, userRepository, _homeBloc)
+            ..add(LoadChatRooms(userId: user.uid))),
       BlocProvider<ProfileBloc>(create: (context) => ProfileBloc()),
       BlocProvider<HomeBloc>(create: (context) => _homeBloc)
     ], child: HomeForm());

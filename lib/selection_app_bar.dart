@@ -15,18 +15,18 @@ class SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
       this.muteSelected,
       this.archiveSelected,
       this.markSelectedUnread,
-      this.chatGroups, this.initialData})
+      this.chatRooms, this.initialData})
       : super(key: key);
 
   final VoidCallback onBackPressed;
   final Stream<List<String>> selectedStream;
-  final List<ChatGroup> chatGroups;
-  final void Function(String value, List<ChatGroup> selected) popUpMenuSelected;
-  final void Function(List<ChatGroup> selected) pinSelected;
-  final void Function(List<ChatGroup> selected) deleteSelected;
-  final void Function(List<ChatGroup> selected) muteSelected;
-  final void Function(List<ChatGroup> selected) archiveSelected;
-  final void Function(List<ChatGroup> selected) markSelectedUnread;
+  final List<ElgChatRoom> chatRooms;
+  final void Function(String value, List<ElgChatRoom> selected) popUpMenuSelected;
+  final void Function(List<ElgChatRoom> selected) pinSelected;
+  final void Function(List<ElgChatRoom> selected) deleteSelected;
+  final void Function(List<ElgChatRoom> selected) muteSelected;
+  final void Function(List<ElgChatRoom> selected) archiveSelected;
+  final void Function(List<ElgChatRoom> selected) markSelectedUnread;
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +38,8 @@ class SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
               snapshot.hasData ? snapshot.data.length.toString() : '1';
           List<String> allSelected = snapshot.hasData ? snapshot.data : [];
 
-          List<ChatGroup> selected = this
-              .chatGroups
+          List<ElgChatRoom> selected = this
+              .chatRooms
               .where((element) => allSelected.contains(element.id)).toList();
 
           return AppBar(
@@ -58,21 +58,21 @@ class SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
         });
   }
 
-  pinButton(List<ChatGroup> selected) {
+  pinButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Pin Toggle',
         child: IconButton(
             icon: Icon(Icons.person_pin),
             onPressed: () {
               if (this.pinSelected != null) {
-                List<ChatGroup> newData =
+                List<ElgChatRoom> newData =
                     selected.map((e) => e.copyWith(pinned: !e.pinned)).toList();
                 this.pinSelected(newData);
               }
             }));
   }
 
-  deleteButton(List<ChatGroup> selected) {
+  deleteButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Delete',
         child: IconButton(
@@ -84,7 +84,7 @@ class SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
             }));
   }
 
-  muteToggleButton(List<ChatGroup> selected) {
+  muteToggleButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Mute Toggle',
         child: IconButton(
@@ -92,14 +92,14 @@ class SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
             onPressed: () {
               // this.muteSelected(selected);
               if (this.muteSelected != null) {
-                List<ChatGroup> newData =
+                List<ElgChatRoom> newData =
                     selected.map((e) => e.copyWith(muted: !e.muted)).toList();
                 this.muteSelected(newData);
               }
             }));
   }
 
-  archiveButton(List<ChatGroup> selected) {
+  archiveButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Archive',
         child: IconButton(
@@ -107,7 +107,7 @@ class SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
             onPressed: () {
               // this.archiveSelected(selected);
               if (this.archiveSelected != null) {
-                List<ChatGroup> newData = selected
+                List<ElgChatRoom> newData = selected
                     .map((e) => e.copyWith(archived: !e.archived))
                     .toList();
                 this.archiveSelected(newData);
@@ -115,7 +115,7 @@ class SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
             }));
   }
 
-  markUnreadButton(List<ChatGroup> selected) {
+  markUnreadButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Mark Unread',
         child: IconButton(
@@ -123,14 +123,14 @@ class SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
             onPressed: () {
               // this.markSelectedUnread(selected);
               if (this.markSelectedUnread != null) {
-                List<ChatGroup> newData =
+                List<ElgChatRoom> newData =
                     selected.map((e) => e.copyWith(read: false)).toList();
                 this.markSelectedUnread(newData);
               }
             }));
   }
 
-  moreMenuButton(List<ChatGroup> selected) {
+  moreMenuButton(List<ElgChatRoom> selected) {
     return PopupMenuButton<String>(
       onSelected: (String value) {
         if (this.popUpMenuSelected != null) {
@@ -164,18 +164,18 @@ class ArchivedSelectionAppBar extends StatelessWidget implements PreferredSizeWi
       this.muteSelected,
       this.archiveSelected,
       this.markSelectedUnread,
-      this.chatGroups, this.initialData})
+      this.chatRooms, this.initialData})
       : super(key: key);
 
   final VoidCallback onBackPressed;
   final Stream<List<String>> selectedStream;
-  final List<ChatGroup> chatGroups;
-  final void Function(String value, List<ChatGroup> selected) popUpMenuSelected;
-  final void Function(List<ChatGroup> selected) pinSelected;
-  final void Function(List<ChatGroup> selected) deleteSelected;
-  final void Function(List<ChatGroup> selected) muteSelected;
-  final void Function(List<ChatGroup> selected) archiveSelected;
-  final void Function(List<ChatGroup> selected) markSelectedUnread;
+  final List<ElgChatRoom> chatRooms;
+  final void Function(String value, List<ElgChatRoom> selected) popUpMenuSelected;
+  final void Function(List<ElgChatRoom> selected) pinSelected;
+  final void Function(List<ElgChatRoom> selected) deleteSelected;
+  final void Function(List<ElgChatRoom> selected) muteSelected;
+  final void Function(List<ElgChatRoom> selected) archiveSelected;
+  final void Function(List<ElgChatRoom> selected) markSelectedUnread;
 
   @override
   Widget build(BuildContext context) {
@@ -187,8 +187,8 @@ class ArchivedSelectionAppBar extends StatelessWidget implements PreferredSizeWi
               snapshot.hasData ? snapshot.data.length.toString() : '1';
           List<String> allSelected = snapshot.hasData ? snapshot.data : [];
 
-          List<ChatGroup> selected = this
-              .chatGroups
+          List<ElgChatRoom> selected = this
+              .chatRooms
               .where((element) => allSelected.contains(element.id)).toList();
 
           return AppBar(
@@ -207,21 +207,21 @@ class ArchivedSelectionAppBar extends StatelessWidget implements PreferredSizeWi
         });
   }
 
-  pinButton(List<ChatGroup> selected) {
+  pinButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Pin Toggle',
         child: IconButton(
             icon: Icon(Icons.person_pin),
             onPressed: () {
               if (this.pinSelected != null) {
-                List<ChatGroup> newData =
+                List<ElgChatRoom> newData =
                     selected.map((e) => e.copyWith(pinned: !e.pinned)).toList();
                 this.pinSelected(newData);
               }
             }));
   }
 
-  deleteButton(List<ChatGroup> selected) {
+  deleteButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Delete',
         child: IconButton(
@@ -233,7 +233,7 @@ class ArchivedSelectionAppBar extends StatelessWidget implements PreferredSizeWi
             }));
   }
 
-  muteToggleButton(List<ChatGroup> selected) {
+  muteToggleButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Mute Toggle',
         child: IconButton(
@@ -241,14 +241,14 @@ class ArchivedSelectionAppBar extends StatelessWidget implements PreferredSizeWi
             onPressed: () {
               // this.muteSelected(selected);
               if (this.muteSelected != null) {
-                List<ChatGroup> newData =
+                List<ElgChatRoom> newData =
                     selected.map((e) => e.copyWith(muted: !e.muted)).toList();
                 this.muteSelected(newData);
               }
             }));
   }
 
-  unarchiveButton(List<ChatGroup> selected) {
+  unarchiveButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Unarchive',
         child: IconButton(
@@ -256,7 +256,7 @@ class ArchivedSelectionAppBar extends StatelessWidget implements PreferredSizeWi
             onPressed: () {
               // this.archiveSelected(selected);
               if (this.archiveSelected != null) {
-                List<ChatGroup> newData = selected
+                List<ElgChatRoom> newData = selected
                     .map((e) => e.copyWith(archived: !e.archived))
                     .toList();
                 this.archiveSelected(newData);
@@ -264,7 +264,7 @@ class ArchivedSelectionAppBar extends StatelessWidget implements PreferredSizeWi
             }));
   }
 
-  markUnreadButton(List<ChatGroup> selected) {
+  markUnreadButton(List<ElgChatRoom> selected) {
     return Tooltip(
         message: 'Mark Unread',
         child: IconButton(
@@ -272,14 +272,14 @@ class ArchivedSelectionAppBar extends StatelessWidget implements PreferredSizeWi
             onPressed: () {
               // this.markSelectedUnread(selected);
               if (this.markSelectedUnread != null) {
-                List<ChatGroup> newData =
+                List<ElgChatRoom> newData =
                     selected.map((e) => e.copyWith(read: false)).toList();
                 this.markSelectedUnread(newData);
               }
             }));
   }
 
-  moreMenuButton(List<ChatGroup> selected) {
+  moreMenuButton(List<ElgChatRoom> selected) {
     return PopupMenuButton<String>(
       onSelected: (String value) {
         if (this.popUpMenuSelected != null) {

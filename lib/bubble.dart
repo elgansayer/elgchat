@@ -9,7 +9,7 @@ double kMarginDepth = 55;
 class ConvosationBubble extends StatelessWidget {
   final bool showAvatar;
   final String avatarUrl;
-  final ChatMessage chatMessage;
+  final ElgChatMessage chatMessage;
   final double radius;
   final bool owner;
   final bool showNip;
@@ -211,16 +211,16 @@ class ConvosationBubble extends StatelessWidget {
     );
   }
 
-  Widget getDeletedMessageText(ChatMessage currentChatMsg) {
+  Widget getDeletedMessageText(ElgChatMessage currentChatMsg) {
     return Text('User deleted their message',
         style: TextStyle(fontStyle: FontStyle.italic));
   }
 
-  Widget getMessageText(ChatMessage currentChatMsg) {
+  Widget getMessageText(ElgChatMessage currentChatMsg) {
     return Text(currentChatMsg?.message ?? '');
   }
 
-  getBubbleContent(ChatMessage currentChatMsg, bool showNip, bool owner) {
+  getBubbleContent(ElgChatMessage currentChatMsg, bool showNip, bool owner) {
     Widget message = currentChatMsg.deleted
         ? getDeletedMessageText(currentChatMsg)
         : getMessageText(currentChatMsg);

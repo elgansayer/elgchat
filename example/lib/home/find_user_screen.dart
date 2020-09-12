@@ -29,8 +29,8 @@ class FindUserForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<FindUserBloc, FindUserState>(
       builder: (context, FindUserState state) {
-        return UserSearchScreen(
-          onTap: (Contact contact) {
+        return ElgUserSearchScreen(
+          onTap: (ElgContact contact) {
             onTap(context, contact);
           },
           contacts: state.contacts,
@@ -42,7 +42,7 @@ class FindUserForm extends StatelessWidget {
     );
   }
 
-  onTap(BuildContext context, Contact contact) {
+  onTap(BuildContext context, ElgContact contact) {
     Navigator.of(context).pop(contact);
   }
 }

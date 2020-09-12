@@ -8,24 +8,24 @@ abstract class ConversationEvent extends Equatable {
 }
 
 class NewMessageEvent extends ConversationEvent {
-  final ChatMessage newChatMessage;
-  final List<Contact> receivers;
-  // final ChatGroup chatGroup;
+  final ElgChatMessage newChatMessage;
+  final List<ElgContact> receivers;
+  // final ChatRoom chatRoom;
   NewMessageEvent({this.newChatMessage, this.receivers});
 }
 
 class ChatMessagesLoaded extends ConversationEvent {
-  final List<ChatMessage> chatMessages;
+  final List<ElgChatMessage> chatMessages;
   ChatMessagesLoaded({this.chatMessages});
 }
 
-class SubscribeToChatGroupEvent extends ConversationEvent {
-  final String chatGroupId;
-  SubscribeToChatGroupEvent({this.chatGroupId});
+class SubscribeToChatRoomEvent extends ConversationEvent {
+  final String chatRoomId;
+  SubscribeToChatRoomEvent({this.chatRoomId});
 }
 
 class InitConversationEvent extends ConversationEvent {
-  final ChatGroup chatGroup;
+  final ElgChatRoom chatRoom;
   final String userId;
-  InitConversationEvent({this.chatGroup, this.userId});
+  InitConversationEvent({this.chatRoom, this.userId});
 }

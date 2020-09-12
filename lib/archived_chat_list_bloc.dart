@@ -2,13 +2,13 @@
 // import 'bloc/chat_list_callback_events.dart';
 // import 'models.dart';
 
-// class ArchivedChatListScreenLogic<T extends ChatGroup>
-//     extends ChatGroupListLogic<T> {
+// class ArchivedChatListScreenLogic<T extends ChatRoom>
+//     extends ChatRoomListLogic<T> {
 //   @override
 //   archiveSelectedEvent() {
-//     List<T> allSelected = chatGroups.selected();
+//     List<T> allSelected = chatRooms.selected();
 
-//     chatGroups = chatGroups.map((T cg) {
+//     chatRooms = chatRooms.map((T cg) {
 //       bool selected = allSelected.contains(cg);
 //       if (selected) {
 //         return cg.copyWith(archived: false, selected: false);
@@ -17,7 +17,7 @@
 //     }).toList();
 
 //     // Get all selected, remove them from the list
-//     chatGroups.removeWhere((cg) => allSelected.contains(cg));
+//     chatRooms.removeWhere((cg) => allSelected.contains(cg));
 
 //     unselectAll();
 //     stateStreamController.add(ChatListState.list);
@@ -27,14 +27,14 @@
 //   }
 
 //   selectAllEvent() {
-//     chatGroups = chatGroups.map((T cg) {
+//     chatRooms = chatRooms.map((T cg) {
 //       if (cg.archived != true) {
 //         return cg.copyWith(selected: true);
 //       }
 //       return cg.copyWith(selected: false);
 //     }).toList();
 
-//     chatGroupsStreamController.add(this.chatGroups);
-//     this.selectedStreamController.add(this.chatGroups);
+//     chatRoomsStreamController.add(this.chatRooms);
+//     this.selectedStreamController.add(this.chatRooms);
 //   }
 // }
