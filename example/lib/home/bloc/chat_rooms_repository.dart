@@ -68,7 +68,8 @@ class ChatRoomsRepository {
     // bool read = isRead(userId, creatorId, readBy);
 
     return UserChatRoomInfo(
-      id: doc.documentID,
+      // id: doc.documentID,
+      id: getParam<String>(UserChatRoomInfoProps.roomId, data, "-1"),
       roomId: getParam<String>(UserChatRoomInfoProps.roomId, data, "-1"),
       muted: getParam<bool>(ChatRoomProps.muted, data, false),
       pinned: getParam<bool>(ChatRoomProps.pinned, data, false),
@@ -92,11 +93,15 @@ class ChatRoomsRepository {
     //Create a batch
     WriteBatch fsBatch = Firestore.instance.batch();
 
-    CollectionReference collectionRef =
-        Firestore.instance.collection(UserChatRoomInfoProps.collectionName);
-
     for (ChatRoomUpdateData updateData in allUpdateData) {
-      fsBatch.updateData(
+      //TODO: Should be user/docid:/collectionName
+      var str =
+          "users/${updateData.documentId}/${UserChatRoomInfoProps.collectionName}";
+//UserChatRoomInfoProps.collectionName
+      CollectionReference collectionRef =
+          Firestore.instance.collection(str);
+
+      fsBatch.setData(
           collectionRef.document(updateData.documentId), updateData.mappedData);
     }
 

@@ -7,10 +7,10 @@ import '../../models.dart';
 
 abstract class MyChatMessageProps extends ChatMessageProps {
   static const String collectionName = "chat_messages";
-  static const String roomIds = "roomIds";
+  static const String roomId = "roomId";
 }
 
-class  ConversationRepository {
+class ConversationRepository {
   // List<MyChatMessage> myChatList = List<MyChatMessage>();
   PublishSubject<List<ElgChatMessage>> chatList =
       PublishSubject<List<ElgChatMessage>>();
@@ -19,7 +19,7 @@ class  ConversationRepository {
   Stream<QuerySnapshot> monitor(String roomId) {
     final ref = Firestore.instance
         .collection(MyChatMessageProps.collectionName)
-        .where(MyChatMessageProps.roomIds, arrayContains: roomId)
+        .where(MyChatMessageProps.roomId, isEqualTo: roomId)
         .orderBy(ChatMessageProps.created);
 
     return ref.snapshots();
